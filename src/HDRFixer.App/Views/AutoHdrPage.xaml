@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="HDRFixer.App.Views.AutoHdrPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Auto HDR" Style="{StaticResource TitleTextBlockStyle}" />
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="12">
+                    <ToggleSwitch x:Name="AutoHdrToggle" Header="Auto HDR" Toggled="AutoHdrToggle_Toggled" />
+                    <ToggleSwitch x:Name="ScreenSplitToggle" Header="Debug Split Screen" Toggled="ScreenSplitToggle_Toggled" />
+                </StackPanel>
+            </Border>
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Per-Game Overrides" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="Force Auto HDR for specific games" Opacity="0.7" />
+                    <ListView x:Name="GameList" MaxHeight="300" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="GamePathBox" PlaceholderText="Path to game .exe" Width="400" />
+                        <Button Content="Add" Click="AddGame_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

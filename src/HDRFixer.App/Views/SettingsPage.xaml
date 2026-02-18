@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="HDRFixer.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="General" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ToggleSwitch x:Name="StartupToggle" Header="Run at Windows startup" />
+                    <ToggleSwitch x:Name="TrayToggle" Header="Minimize to system tray" IsOn="True" />
+                    <ToggleSwitch x:Name="ServiceToggle" Header="Enable background service" IsOn="True" />
+                    <ToggleSwitch x:Name="WatchdogToggle" Header="Enable fix watchdog" IsOn="True" />
+                </StackPanel>
+            </Border>
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Backup &amp; Restore" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Save Settings" Click="SaveSettings_Click" />
+                        <Button Content="Reset to Defaults" Click="ResetSettings_Click" />
+                    </StackPanel>
+                    <TextBlock x:Name="SettingsStatus" Opacity="0.7" />
+                </StackPanel>
+            </Border>
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="About" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="HDRFixer v1.0" />
+                    <TextBlock Text="Windows 11 HDR Fix and Enhancement Toolkit" Opacity="0.7" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
