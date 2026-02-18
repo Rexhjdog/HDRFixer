@@ -7,6 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="8.0.0" />
-    <PackageReference Include="Vortice.DXGI" Version="3.8.1" />
+    <PackageReference Include="Vortice.DXGI" Version="2.4.2" />
   </ItemGroup>
 </Project>
