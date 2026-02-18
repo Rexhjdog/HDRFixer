@@ -1,4 +1,4 @@
-using HDRFixer.Core.Ipc;
+﻿using HDRFixer.Core.Ipc;
 using HDRFixer.Core.Fixes;
 using HDRFixer.Core.Settings;
 
@@ -15,7 +15,7 @@ public class HdrServiceWorker : BackgroundService
     {
         _logger = logger;
         _ipcServer = new IpcServer();
-        _fixEngine = new FixEngine();
+        _fixEngine = FixEngineFactory.Create();
         _settings = new SettingsManager();
     }
 
@@ -51,9 +51,9 @@ public class HdrServiceWorker : BackgroundService
         _logger.LogInformation("IPC command: {Action}", message.Action);
         switch (message.Action)
         {
-            case "ApplyAll": _fixEngine.ApplyAll(); break;
-            case "RevertAll": _fixEngine.RevertAll(); break;
-            case "Diagnose": _fixEngine.DiagnoseAll(); break;
+            case "ApplyAll":  _fixEngine.ApplyAll();    break;
+            case "RevertAll": _fixEngine.RevertAll();   break;
+            case "Diagnose":  _fixEngine.DiagnoseAll(); break;
         }
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using HDRFixer.Core.Display;
 using HDRFixer.Core.Diagnostics;
@@ -8,11 +8,12 @@ namespace HDRFixer.App.Views;
 
 public sealed partial class DashboardPage : Page
 {
-    private readonly FixEngine _fixEngine = new();
+    private readonly FixEngine _fixEngine;
 
     public DashboardPage()
     {
         this.InitializeComponent();
+        _fixEngine = FixEngineFactory.Create();
         Loaded += (_, _) => RefreshUI();
     }
 
@@ -32,7 +33,8 @@ public sealed partial class DashboardPage : Page
             }
             else { DisplayNameText.Text = "No displays detected"; }
 
-            var report = new DiagnosticReport { Displays = displays };
+            var builder = new DiagnosticReportBuilder();
+            var report = builder.Build(_fixEngine);
             int score = new HealthScoreCalculator().Calculate(report);
             HealthRing.Value = score;
             HealthLabelText.Text = $"{score}/100 - {(score >= 80 ? "Excellent" : score >= 50 ? "Needs Work" : "Poor")}";
