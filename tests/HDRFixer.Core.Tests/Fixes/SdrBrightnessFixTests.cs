@@ -48,6 +48,11 @@ public class SdrBrightnessFixTests
     [InlineData(600f, 250f)]   // HDR600
     [InlineData(400f, 280f)]   // HDR400
     [InlineData(100f, 200f)]   // default
+    [InlineData(799f, 250f)]
+    [InlineData(601f, 250f)]
+    [InlineData(599f, 280f)]
+    [InlineData(401f, 280f)]
+    [InlineData(399f, 200f)]
     public void CalculateOptimalWhiteLevel_ReturnsExpected(float maxLuminance, float expected)
     {
         var display = new DisplayInfo { MaxLuminance = maxLuminance };
