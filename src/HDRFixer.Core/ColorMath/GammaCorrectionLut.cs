@@ -14,25 +14,18 @@ public static class GammaCorrectionLut
         return lut;
     }
 
-    public static double[] GenerateHdrSrgbToGamma22Lut(int lutSize = 4096, double whiteLevelNits = 200.0)
+    public static double[] GenerateHdrSrgbToGamma22Lut(int lutSize = 4096, double whiteLevelNits = 200.0, double blackLevelNits = 0.0)
     {
         var lut = new double[lutSize];
         for (int i = 0; i < lutSize; i++)
         {
             double pqInput = (double)i / (lutSize - 1);
             double nits = TransferFunctions.PqEotf(pqInput);
-
-            if (nits <= 0.0001) { lut[i] = 0; continue; }
             if (nits > whiteLevelNits) { lut[i] = pqInput; continue; }
-
-            // Map piecewise sRGB back to linear, then apply Gamma 2.2
-            // Windows HDR maps SDR content such that 'srgb 1.0' = 'whiteLevelNits'
-            double relativeL = nits / whiteLevelNits;
-            double srgbSignal = TransferFunctions.SrgbInvEotf(relativeL);
-            double gamma22L = Math.Pow(srgbSignal, 2.2);
-            double correctedNits = gamma22L * whiteLevelNits;
-
-            lut[i] = TransferFunctions.PqInvEotf(correctedNits);
+            double normalizedL = nits / whiteLevelNits;
+            double srgbSignal = TransferFunctions.SrgbInvEotf(normalizedL);
+            double gamma22Nits = (whiteLevelNits - blackLevelNits) * Math.Pow(srgbSignal, 2.2) + blackLevelNits;
+            lut[i] = TransferFunctions.PqInvEotf(gamma22Nits);
         }
         return lut;
     }
