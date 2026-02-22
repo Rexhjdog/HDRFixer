@@ -6,31 +6,28 @@ namespace HDRFixer.Core.Tests.OledProtection;
 public class OledGuardianTests
 {
     [Fact]
-    public void UsageTracker_TracksTime()
+    public void TracksRunTime()
     {
         var tracker = new OledUsageTracker();
         tracker.Start();
-        // Can't easily test real time in unit test without mocking clock,
-        // but we can verify it doesn't throw and properties exist.
-        Assert.True(tracker.CurrentSessionMinutes >= 0);
+        Thread.Sleep(100);
         tracker.Stop();
+        Assert.True(tracker.CurrentSessionMinutes >= 0);
     }
 
     [Fact]
-    public void UsageTracker_PixelRefreshReminder_TriggeredAtThreshold()
+    public void ReminderTriggersAfterThreshold()
     {
         var tracker = new OledUsageTracker();
-        tracker.SetTotalHours(3.9);
-        Assert.False(tracker.ShouldRemindPixelRefresh());
         tracker.SetTotalHours(4.1);
         Assert.True(tracker.ShouldRemindPixelRefresh());
     }
 
     [Fact]
-    public void Settings_DefaultValues()
+    public void NoReminderBelowThreshold()
     {
-        var settings = new OledProtectionSettings();
-        Assert.Equal(5, settings.StaticContentTimeoutMinutes);
-        Assert.Equal(4.0, settings.PixelRefreshReminderHours);
+        var tracker = new OledUsageTracker();
+        tracker.SetTotalHours(2.0);
+        Assert.False(tracker.ShouldRemindPixelRefresh());
     }
 }

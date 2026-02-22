@@ -7,20 +7,19 @@ namespace HDRFixer.Core.Tests.Ipc;
 public class IpcMessageTests
 {
     [Fact]
-    public void SerializesRequest()
+    public void SerializesCommand()
     {
-        var msg = new IpcMessage { Type = IpcMessageType.Request, Action = "ApplyFix",
+        var msg = new IpcMessage { Type = IpcMessageType.Command, Action = "ApplyFix",
             Payload = JsonSerializer.Serialize(new { FixName = "Gamma" }) };
-        var json = JsonSerializer.Serialize(msg);
-        var d = JsonSerializer.Deserialize<IpcMessage>(json)!;
-        Assert.Equal(IpcMessageType.Request, d.Type);
+        var d = JsonSerializer.Deserialize<IpcMessage>(JsonSerializer.Serialize(msg))!;
+        Assert.Equal(IpcMessageType.Command, d.Type);
         Assert.Equal("ApplyFix", d.Action);
     }
 
     [Fact]
-    public void SerializesNotification()
+    public void SerializesEvent()
     {
-        var msg = new IpcMessage { Type = IpcMessageType.Notification, Action = "FixApplied" };
+        var msg = new IpcMessage { Type = IpcMessageType.Event, Action = "FixApplied" };
         Assert.Contains("FixApplied", JsonSerializer.Serialize(msg));
     }
 
