@@ -7,10 +7,10 @@ namespace HDRFixer.Core.Tests.Fixes;
 public class FixEngineFactoryTests
 {
     [Fact]
-    public void Create_RegistersFourFixes()
+    public void Create_RegistersThreeFixes()
     {
         var engine = FixEngineFactory.Create(new FakeDetector());
-        Assert.Equal(4, engine.GetAllFixes().Count);
+        Assert.Equal(3, engine.GetAllFixes().Count);
     }
 
     [Fact]
@@ -38,14 +38,14 @@ public class FixEngineFactoryTests
     public void Create_HandlesNoDisplaysGracefully()
     {
         var engine = FixEngineFactory.Create(new EmptyDetector());
-        Assert.Equal(4, engine.GetAllFixes().Count);
+        Assert.Equal(3, engine.GetAllFixes().Count);
     }
 
     [Fact]
     public void Create_HandlesDetectorException()
     {
         var engine = FixEngineFactory.Create(new ThrowingDetector());
-        Assert.Equal(4, engine.GetAllFixes().Count);
+        Assert.Equal(3, engine.GetAllFixes().Count);
     }
 
     private class FakeDetector : IDisplayDetector
