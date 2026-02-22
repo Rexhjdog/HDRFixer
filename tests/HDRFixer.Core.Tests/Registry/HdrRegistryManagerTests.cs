@@ -10,7 +10,7 @@ public class HdrRegistryManagerTests
     {
         Assert.Equal(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", HdrRegistryPaths.GraphicsDrivers);
         Assert.Equal(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\MonitorDataStore", HdrRegistryPaths.MonitorDataStore);
-        Assert.Equal(@"Software\Microsoft\DirectX\UserGpuPreferences", HdrRegistryPaths.DirectXUserPrefs);
+        Assert.Equal(@"Software\Microsoft\Direct3D", HdrRegistryPaths.Direct3D);
     }
 
     [Fact]

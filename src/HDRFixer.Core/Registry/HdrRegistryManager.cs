@@ -6,9 +6,7 @@ public static class HdrRegistryPaths
 {
     public const string GraphicsDrivers = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers";
     public const string MonitorDataStore = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\MonitorDataStore";
-    public const string DirectXUserPrefs = @"Software\Microsoft\DirectX\UserGpuPreferences";
     public const string Direct3D = @"Software\Microsoft\Direct3D";
-    public const string VideoSettings = @"Software\Microsoft\Windows\CurrentVersion\VideoSettings";
 }
 
 public static class DirectXSettingsParser
