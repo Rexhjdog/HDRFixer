@@ -6,11 +6,13 @@ namespace HDRFixer.Core.Diagnostics;
 
 public class DiagnosticReportBuilder
 {
-    public DiagnosticReport Build(FixEngine? engine = null, IDisplayDetector? detector = null)
+    public async Task<DiagnosticReport> BuildAsync(FixEngine? engine = null, IDisplayDetector? detector = null)
     {
         detector ??= new DxgiDisplayDetector();
         List<DisplayInfo> displays;
-        try { displays = detector.DetectDisplays(); }
+        try {
+            displays = await Task.Run(() => detector.DetectDisplays());
+        }
         catch { displays = new List<DisplayInfo>(); }
 
         var report = new DiagnosticReport
@@ -33,7 +35,7 @@ public class DiagnosticReportBuilder
         // Check fix states if engine is provided
         if (engine != null)
         {
-            var diagnostics = engine.DiagnoseAll();
+            var diagnostics = await engine.DiagnoseAllAsync();
             report.GammaCorrectionApplied = diagnostics.TryGetValue("SDR Tone Curve Correction", out var gamma) 
                 && gamma.State == FixState.Applied;
             report.SdrBrightnessOptimal = diagnostics.TryGetValue("SDR Brightness Optimization", out var brightness) 

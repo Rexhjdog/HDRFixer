@@ -16,11 +16,11 @@ public class PixelFormatFix : IFix
         _display = display;
     }
 
-    public FixResult Apply()
+    public async Task<FixResult> ApplyAsync()
     {
         // This fix is mostly informational/diagnostic as changing pixel format
         // usually requires GPU-specific APIs (NVAPI/ADL) or user intervention in GPU control panel.
-        var status = Diagnose();
+        var status = await DiagnoseAsync();
         return new FixResult
         {
             Success = status.State == FixState.Applied || status.State == FixState.NotNeeded,
@@ -28,27 +28,30 @@ public class PixelFormatFix : IFix
         };
     }
 
-    public FixResult Revert()
+    public Task<FixResult> RevertAsync()
     {
-        return new FixResult { Success = true, Message = "Nothing to revert" };
+        return Task.FromResult(new FixResult { Success = true, Message = "Nothing to revert" });
     }
 
-    public FixStatus Diagnose()
+    public Task<FixStatus> DiagnoseAsync()
     {
-        if (!_display.IsHdrEnabled)
+        return Task.Run(() =>
         {
-            Status = new FixStatus { State = FixState.NotNeeded, Message = "HDR is not enabled" };
-            return Status;
-        }
+            if (!_display.IsHdrEnabled)
+            {
+                Status = new FixStatus { State = FixState.NotNeeded, Message = "HDR is not enabled" };
+                return Status;
+            }
 
-        if (_display.BitsPerColor >= 10)
-        {
-            Status = new FixStatus { State = FixState.Applied, Message = $"Outputting {_display.BitsPerColor}-bit color (Optimal)" };
-        }
-        else
-        {
-            Status = new FixStatus { State = FixState.Error, Message = $"Outputting only {_display.BitsPerColor}-bit color. 10-bit or higher is recommended for HDR." };
-        }
-        return Status;
+            if (_display.BitsPerColor >= 10)
+            {
+                Status = new FixStatus { State = FixState.Applied, Message = $"Outputting {_display.BitsPerColor}-bit color (Optimal)" };
+            }
+            else
+            {
+                Status = new FixStatus { State = FixState.Error, Message = $"Outputting only {_display.BitsPerColor}-bit color. 10-bit or higher is recommended for HDR." };
+            }
+            return Status;
+        });
     }
 }
