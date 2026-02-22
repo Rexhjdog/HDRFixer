@@ -21,12 +21,12 @@ public class FixEngineTests
     }
 
     [Fact]
-    public void FixEngine_ApplyAll_AppliesAllRegistered()
+    public async Task FixEngine_ApplyAll_AppliesAllRegistered()
     {
         var engine = new FixEngine();
         engine.Register(new TestFix("Fix1"));
         engine.Register(new TestFix("Fix2"));
-        var results = engine.ApplyAll();
+        var results = await engine.ApplyAllAsync();
         Assert.Equal(2, results.Count);
         Assert.All(results, r => Assert.True(r.Success));
     }
@@ -38,8 +38,8 @@ public class FixEngineTests
         public FixCategory Category => FixCategory.ToneCurve;
         public FixStatus Status { get; private set; } = new();
         public TestFix(string name = "Test Fix") => Name = name;
-        public FixResult Apply() { Status = new FixStatus { State = FixState.Applied }; return new FixResult { Success = true }; }
-        public FixResult Revert() { Status = new FixStatus { State = FixState.NotApplied }; return new FixResult { Success = true }; }
-        public FixStatus Diagnose() => Status;
+        public Task<FixResult> ApplyAsync() { Status = new FixStatus { State = FixState.Applied }; return Task.FromResult(new FixResult { Success = true }); }
+        public Task<FixResult> RevertAsync() { Status = new FixStatus { State = FixState.NotApplied }; return Task.FromResult(new FixResult { Success = true }); }
+        public Task<FixStatus> DiagnoseAsync() => Task.FromResult(Status);
     }
 }

@@ -22,22 +22,22 @@ public class SdrBrightnessFixTests
     }
 
     [Fact]
-    public void Apply_ReturnsSuccess()
+    public async Task Apply_ReturnsSuccess()
     {
         var fix = new SdrBrightnessFix(
             new DisplayInfo { MaxLuminance = 800f },
             new FakeRegistryManager());
-        var result = fix.Apply();
+        var result = await fix.ApplyAsync();
         Assert.True(result.Success);
         Assert.Equal(FixState.Applied, fix.Status.State);
     }
 
     [Fact]
-    public void Revert_ReturnsSuccess()
+    public async Task Revert_ReturnsSuccess()
     {
         var fix = new SdrBrightnessFix(new DisplayInfo());
-        fix.Apply();
-        var result = fix.Revert();
+        await fix.ApplyAsync();
+        var result = await fix.RevertAsync();
         Assert.True(result.Success);
         Assert.Equal(FixState.NotApplied, fix.Status.State);
     }
@@ -56,20 +56,20 @@ public class SdrBrightnessFixTests
     }
 
     [Fact]
-    public void Diagnose_NearOptimal_ReportsApplied()
+    public async Task Diagnose_NearOptimal_ReportsApplied()
     {
         var display = new DisplayInfo { MaxLuminance = 800f, SdrWhiteLevelNits = 210f };
         var fix = new SdrBrightnessFix(display);
-        var status = fix.Diagnose();
+        var status = await fix.DiagnoseAsync();
         Assert.Equal(FixState.Applied, status.State);
     }
 
     [Fact]
-    public void Diagnose_FarFromOptimal_ReportsNotApplied()
+    public async Task Diagnose_FarFromOptimal_ReportsNotApplied()
     {
         var display = new DisplayInfo { MaxLuminance = 800f, SdrWhiteLevelNits = 80f };
         var fix = new SdrBrightnessFix(display);
-        var status = fix.Diagnose();
+        var status = await fix.DiagnoseAsync();
         Assert.Equal(FixState.NotApplied, status.State);
     }
 

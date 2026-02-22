@@ -19,15 +19,13 @@ public partial class DiagnosticsViewModel : BaseViewModel
         Title = "Diagnostics";
         _fixEngine = FixEngineFactory.Create();
         _builder = new DiagnosticReportBuilder();
-        RunDiagnosticsCommand = new RelayCommand(RunDiagnostics);
     }
 
-    public IRelayCommand RunDiagnosticsCommand { get; }
-
-    public void RunDiagnostics()
+    [RelayCommand]
+    public async Task RunDiagnostics()
     {
         IsBusy = true;
-        var report = _builder.Build(_fixEngine);
+        var report = await _builder.BuildAsync(_fixEngine);
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"HDRFixer Diagnostic Report - {report.Timestamp}");

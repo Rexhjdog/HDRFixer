@@ -20,55 +20,64 @@ public class SdrBrightnessFix : IFix
         _registry = registry ?? new HdrRegistryManager();
     }
 
-    public FixResult Apply()
+    public Task<FixResult> ApplyAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            _originalNits = _display.SdrWhiteLevelNits;
-            float optimal = CalculateOptimalWhiteLevel(_display);
-
-            var monitorIds = _registry.GetMonitorIds();
-            // Try to find the matching monitor ID in registry
-            // This is a heuristic: match the first one if only one display
-            if (monitorIds.Count > 0)
+            try
             {
-                string monitorId = monitorIds[0]; // Simplified for now
-                _registry.SetSdrWhiteLevel(monitorId, optimal);
-                Status = new FixStatus
+                _originalNits = _display.SdrWhiteLevelNits;
+                float optimal = CalculateOptimalWhiteLevel(_display);
+
+                var monitorIds = _registry.GetMonitorIds();
+                // Try to find the matching monitor ID in registry
+                // This is a heuristic: match the first one if only one display
+                if (monitorIds.Count > 0)
                 {
-                    State = FixState.Applied,
-                    Message = $"SDR white level set to {optimal:F0} nits (was: {_display.SdrWhiteLevelNits:F0} nits)"
-                };
+                    string monitorId = monitorIds[0]; // Simplified for now
+                    _registry.SetSdrWhiteLevel(monitorId, optimal);
+                    Status = new FixStatus
+                    {
+                        State = FixState.Applied,
+                        Message = $"SDR white level set to {optimal:F0} nits (was: {_display.SdrWhiteLevelNits:F0} nits)"
+                    };
+                }
+                else
+                {
+                    Status = new FixStatus { State = FixState.Error, Message = "Could not find monitor in registry" };
+                }
+
+                return new FixResult { Success = Status.State == FixState.Applied, Message = Status.Message };
             }
-            else
+            catch (Exception ex)
             {
-                Status = new FixStatus { State = FixState.Error, Message = "Could not find monitor in registry" };
+                Status = new FixStatus { State = FixState.Error, Message = ex.Message };
+                return new FixResult { Success = false, Message = ex.Message };
             }
+        });
+    }
 
-            return new FixResult { Success = Status.State == FixState.Applied, Message = Status.Message };
-        }
-        catch (Exception ex)
+    public Task<FixResult> RevertAsync()
+    {
+        return Task.Run(() =>
         {
-            Status = new FixStatus { State = FixState.Error, Message = ex.Message };
-            return new FixResult { Success = false, Message = ex.Message };
-        }
+            Status = new FixStatus { State = FixState.NotApplied, Message = "Reverted" };
+            return new FixResult { Success = true, Message = "SDR brightness fix reverted" };
+        });
     }
 
-    public FixResult Revert()
+    public Task<FixStatus> DiagnoseAsync()
     {
-        Status = new FixStatus { State = FixState.NotApplied, Message = "Reverted" };
-        return new FixResult { Success = true, Message = "SDR brightness fix reverted" };
-    }
-
-    public FixStatus Diagnose()
-    {
-        float current = _display.SdrWhiteLevelNits;
-        float optimal = CalculateOptimalWhiteLevel(_display);
-        bool isOptimal = Math.Abs(current - optimal) < 30f;
-        Status = isOptimal
-            ? new FixStatus { State = FixState.Applied, Message = $"SDR white level is near optimal ({current:F0} nits)" }
-            : new FixStatus { State = FixState.NotApplied, Message = $"SDR white level ({current:F0} nits) differs from recommended ({optimal:F0} nits)" };
-        return Status;
+        return Task.Run(() =>
+        {
+            float current = _display.SdrWhiteLevelNits;
+            float optimal = CalculateOptimalWhiteLevel(_display);
+            bool isOptimal = Math.Abs(current - optimal) < 30f;
+            Status = isOptimal
+                ? new FixStatus { State = FixState.Applied, Message = $"SDR white level is near optimal ({current:F0} nits)" }
+                : new FixStatus { State = FixState.NotApplied, Message = $"SDR white level ({current:F0} nits) differs from recommended ({optimal:F0} nits)" };
+            return Status;
+        });
     }
 
     public static float CalculateOptimalWhiteLevel(DisplayInfo display)

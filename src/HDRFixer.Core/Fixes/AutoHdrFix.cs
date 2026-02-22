@@ -16,48 +16,57 @@ public class AutoHdrFix : IFix
         _registry = registry ?? new HdrRegistryManager();
     }
 
-    public FixResult Apply()
+    public Task<FixResult> ApplyAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            _registry.SetAutoHdrEnabled(true);
-            Status = new FixStatus { State = FixState.Applied, Message = "Auto HDR enabled" };
-            return new FixResult { Success = true, Message = Status.Message };
-        }
-        catch (Exception ex)
-        {
-            Status = new FixStatus { State = FixState.Error, Message = ex.Message };
-            return new FixResult { Success = false, Message = ex.Message };
-        }
+            try
+            {
+                _registry.SetAutoHdrEnabled(true);
+                Status = new FixStatus { State = FixState.Applied, Message = "Auto HDR enabled" };
+                return new FixResult { Success = true, Message = Status.Message };
+            }
+            catch (Exception ex)
+            {
+                Status = new FixStatus { State = FixState.Error, Message = ex.Message };
+                return new FixResult { Success = false, Message = ex.Message };
+            }
+        });
     }
 
-    public FixResult Revert()
+    public Task<FixResult> RevertAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            _registry.SetAutoHdrEnabled(false);
-            Status = new FixStatus { State = FixState.NotApplied, Message = "Auto HDR disabled" };
-            return new FixResult { Success = true, Message = Status.Message };
-        }
-        catch (Exception ex)
-        {
-            return new FixResult { Success = false, Message = ex.Message };
-        }
+            try
+            {
+                _registry.SetAutoHdrEnabled(false);
+                Status = new FixStatus { State = FixState.NotApplied, Message = "Auto HDR disabled" };
+                return new FixResult { Success = true, Message = Status.Message };
+            }
+            catch (Exception ex)
+            {
+                return new FixResult { Success = false, Message = ex.Message };
+            }
+        });
     }
 
-    public FixStatus Diagnose()
+    public Task<FixStatus> DiagnoseAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            bool enabled = _registry.IsAutoHdrEnabled();
-            Status = enabled
-                ? new FixStatus { State = FixState.Applied, Message = "Auto HDR is enabled" }
-                : new FixStatus { State = FixState.NotApplied, Message = "Auto HDR is disabled" };
-        }
-        catch (Exception ex)
-        {
-            Status = new FixStatus { State = FixState.Error, Message = ex.Message };
-        }
-        return Status;
+            try
+            {
+                bool enabled = _registry.IsAutoHdrEnabled();
+                Status = enabled
+                    ? new FixStatus { State = FixState.Applied, Message = "Auto HDR is enabled" }
+                    : new FixStatus { State = FixState.NotApplied, Message = "Auto HDR is disabled" };
+            }
+            catch (Exception ex)
+            {
+                Status = new FixStatus { State = FixState.Error, Message = ex.Message };
+            }
+            return Status;
+        });
     }
 }

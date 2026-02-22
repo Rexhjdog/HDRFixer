@@ -21,7 +21,7 @@ public interface IFix
     string Description { get; }
     FixCategory Category { get; }
     FixStatus Status { get; }
-    FixResult Apply();
-    FixResult Revert();
-    FixStatus Diagnose();
+    Task<FixResult> ApplyAsync();
+    Task<FixResult> RevertAsync();
+    Task<FixStatus> DiagnoseAsync();
 }

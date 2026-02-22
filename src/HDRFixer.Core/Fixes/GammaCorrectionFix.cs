@@ -18,48 +18,57 @@ public class GammaCorrectionFix : IFix
     public GammaCorrectionFix(ColorProfileInstaller installer, DisplayInfo display)
     { _installer = installer; _display = display; }
 
-    public FixResult Apply()
+    public Task<FixResult> ApplyAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            double whiteLevelNits = _display.SdrWhiteLevelNits > 0 ? _display.SdrWhiteLevelNits : 200.0;
-            var lut1d = GammaCorrectionLut.GenerateHdrSrgbToGamma22Lut(4096, whiteLevelNits);
-            var regammaLut = new double[3, 4096];
-            for (int ch = 0; ch < 3; ch++)
-                for (int i = 0; i < 4096; i++)
-                    regammaLut[ch, i] = lut1d[i];
-            var identityMatrix = new double[,] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 } };
-            byte[] profileData = Mhc2ProfileWriter.CreateProfile(
-                "HDRFixer Gamma 2.2 Correction", _display.MaxLuminance, _display.MinLuminance, identityMatrix, regammaLut);
-            string tempPath = Path.Combine(Path.GetTempPath(), ProfileName);
-            File.WriteAllBytes(tempPath, profileData);
-            _installer.InstallAndAssociate(tempPath, _display);
-            Status = new FixStatus { State = FixState.Applied, Message = "Gamma 2.2 profile installed" };
-            return new FixResult { Success = true, Message = Status.Message };
-        }
-        catch (Exception ex)
-        {
-            Status = new FixStatus { State = FixState.Error, Message = ex.Message };
-            return new FixResult { Success = false, Message = ex.Message };
-        }
+            try
+            {
+                double whiteLevelNits = _display.SdrWhiteLevelNits > 0 ? _display.SdrWhiteLevelNits : 200.0;
+                var lut1d = GammaCorrectionLut.GenerateHdrSrgbToGamma22Lut(4096, whiteLevelNits);
+                var regammaLut = new double[3, 4096];
+                for (int ch = 0; ch < 3; ch++)
+                    for (int i = 0; i < 4096; i++)
+                        regammaLut[ch, i] = lut1d[i];
+                var identityMatrix = new double[,] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 } };
+                byte[] profileData = Mhc2ProfileWriter.CreateProfile(
+                    "HDRFixer Gamma 2.2 Correction", _display.MaxLuminance, _display.MinLuminance, identityMatrix, regammaLut);
+                string tempPath = Path.Combine(Path.GetTempPath(), ProfileName);
+                File.WriteAllBytes(tempPath, profileData);
+                _installer.InstallAndAssociate(tempPath, _display);
+                Status = new FixStatus { State = FixState.Applied, Message = "Gamma 2.2 profile installed" };
+                return new FixResult { Success = true, Message = Status.Message };
+            }
+            catch (Exception ex)
+            {
+                Status = new FixStatus { State = FixState.Error, Message = ex.Message };
+                return new FixResult { Success = false, Message = ex.Message };
+            }
+        });
     }
 
-    public FixResult Revert()
+    public Task<FixResult> RevertAsync()
     {
-        try
+        return Task.Run(() =>
         {
-            _installer.Uninstall(ProfileName, _display);
-            Status = new FixStatus { State = FixState.NotApplied, Message = "Profile removed" };
-            return new FixResult { Success = true, Message = "Gamma correction reverted" };
-        }
-        catch (Exception ex) { return new FixResult { Success = false, Message = ex.Message }; }
+            try
+            {
+                _installer.Uninstall(ProfileName, _display);
+                Status = new FixStatus { State = FixState.NotApplied, Message = "Profile removed" };
+                return new FixResult { Success = true, Message = "Gamma correction reverted" };
+            }
+            catch (Exception ex) { return new FixResult { Success = false, Message = ex.Message }; }
+        });
     }
 
-    public FixStatus Diagnose()
+    public Task<FixStatus> DiagnoseAsync()
     {
-        Status = _installer.IsProfileInstalled(ProfileName)
-            ? new FixStatus { State = FixState.Applied }
-            : new FixStatus { State = FixState.NotApplied };
-        return Status;
+        return Task.Run(() =>
+        {
+            Status = _installer.IsProfileInstalled(ProfileName)
+                ? new FixStatus { State = FixState.Applied }
+                : new FixStatus { State = FixState.NotApplied };
+            return Status;
+        });
     }
 }

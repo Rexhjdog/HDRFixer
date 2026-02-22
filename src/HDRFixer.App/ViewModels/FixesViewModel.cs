@@ -22,26 +22,28 @@ public partial class FixViewModel : ObservableObject
     public FixViewModel(IFix fix)
     {
         _fix = fix;
-        UpdateStatus();
+        _ = UpdateStatusAsync();
     }
 
     [RelayCommand]
-    public void Apply()
+    public async Task Apply()
     {
-        _fix.Apply();
-        UpdateStatus();
+        StatusMessage = "Applying...";
+        await _fix.ApplyAsync();
+        await UpdateStatusAsync();
     }
 
     [RelayCommand]
-    public void Revert()
+    public async Task Revert()
     {
-        _fix.Revert();
-        UpdateStatus();
+        StatusMessage = "Reverting...";
+        await _fix.RevertAsync();
+        await UpdateStatusAsync();
     }
 
-    public void UpdateStatus()
+    public async Task UpdateStatusAsync()
     {
-        var status = _fix.Diagnose();
+        var status = await _fix.DiagnoseAsync();
         StatusMessage = status.Message;
         State = status.State;
     }
