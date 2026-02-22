@@ -40,6 +40,8 @@ public interface IHdrRegistryManager
     List<string> GetMonitorIds();
     bool IsAdvancedColorEnabled(string monitorId);
     void SetAdvancedColorEnabled(string monitorId, bool enabled);
+    void SetSdrWhiteLevel(string monitorId, float nits);
+    void SetAutoHdrPerGame(string exePath, bool enabled);
 }
 
 public class HdrRegistryManager : IHdrRegistryManager
@@ -84,5 +86,25 @@ public class HdrRegistryManager : IHdrRegistryManager
     {
         using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey($@"{HdrRegistryPaths.MonitorDataStore}\{monitorId}", writable: true);
         key?.SetValue("AdvancedColorEnabled", enabled ? 1 : 0, RegistryValueKind.DWord);
+    }
+
+    public void SetSdrWhiteLevel(string monitorId, float nits)
+    {
+        using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey($@"{HdrRegistryPaths.MonitorDataStore}\{monitorId}", writable: true);
+        if (key != null)
+        {
+            // SDRWhiteLevel is stored as (nits / 80) * 1000
+            int value = (int)((nits / 80f) * 1000f);
+            key.SetValue("SDRWhiteLevel", value, RegistryValueKind.DWord);
+        }
+    }
+
+    public void SetAutoHdrPerGame(string exePath, bool enabled)
+    {
+        using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(HdrRegistryPaths.Direct3D, writable: true);
+        if (key == null) return;
+
+        using var appKey = key.CreateSubKey(Path.GetFileName(exePath), writable: true);
+        appKey.SetValue("AutoHDR", enabled ? 1 : 0, RegistryValueKind.DWord);
     }
 }

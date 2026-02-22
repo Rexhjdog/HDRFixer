@@ -2,39 +2,27 @@
 <Page
     x:Class="HDRFixer.App.Views.OledPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:HDRFixer.App.ViewModels">
     <ScrollViewer Padding="24">
         <StackPanel Spacing="16">
-            <TextBlock Text="OLED Protection" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind ViewModel.Title}" Style="{StaticResource TitleTextBlockStyle}" />
+
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="Burn-In Prevention" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <ToggleSwitch x:Name="PixelShiftToggle" Header="Pixel Shift" />
-                    <ToggleSwitch x:Name="AutoHideTaskbarToggle" Header="Auto-Hide Taskbar When Idle" />
-                    <ToggleSwitch x:Name="DarkModeToggle" Header="Enforce Dark Mode" />
+                    <TextBlock Text="Burn-in Prevention" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ToggleSwitch Header="Pixel Shift" IsOn="{x:Bind ViewModel.PixelShiftEnabled, Mode=TwoWay}"
+                                  ToolTipService.ToolTip="Periodically shifts the display by a few pixels to prevent static image retention" />
+                    <ToggleSwitch Header="Auto-hide Taskbar" IsOn="{x:Bind ViewModel.AutoHideTaskbar, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Enforce Dark Mode" IsOn="{x:Bind ViewModel.DarkModeEnforced, Mode=TwoWay}" />
                 </StackPanel>
             </Border>
+
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Static Content Detection" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Slider x:Name="TimeoutSlider" Minimum="1" Maximum="30" Value="5" Width="300" />
-                        <TextBlock x:Name="TimeoutLabel" Text="5 minutes" VerticalAlignment="Center" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Usage Tracking" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock x:Name="UsageText" Text="Session: 0 minutes" />
-                    <TextBlock Text="Pixel refresh recommended every 4 hours of use" Opacity="0.7" />
-                </StackPanel>
-            </Border>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="About ABL (Auto Brightness Limiter)" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock TextWrapping="Wrap" Opacity="0.7"
-                        Text="ABL is a hardware-level protection that reduces peak brightness when large bright areas are displayed. This is controlled by the panel's firmware and cannot be modified through software. It is normal behavior for OLED displays." />
+                    <TextBlock Text="Panel Usage" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="Estimated cumulative HDR usage since last refresh:" Opacity="0.7" />
+                    <TextBlock Text="{x:Bind ViewModel.UsageTimeText, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                 </StackPanel>
             </Border>
         </StackPanel>
