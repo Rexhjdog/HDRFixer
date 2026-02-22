@@ -20,7 +20,6 @@ public static class FixEngineFactory
         engine.Register(new GammaCorrectionFix(installer, primaryDisplay));
         engine.Register(new SdrBrightnessFix(primaryDisplay));
         engine.Register(new AutoHdrFix());
-        engine.Register(new PixelFormatFix(primaryDisplay));
         
         return engine;
     }
