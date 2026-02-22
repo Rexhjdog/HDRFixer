@@ -2,27 +2,17 @@
 <Page
     x:Class="HDRFixer.App.Views.DiagnosticsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:HDRFixer.App.ViewModels">
-    <Grid Padding="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0" Text="{x:Bind ViewModel.Title}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,16" />
-
-        <TextBox Grid.Row="1"
-                 Text="{x:Bind ViewModel.FullReportText, Mode=OneWay}"
-                 IsReadOnly="True"
-                 AcceptsReturn="True"
-                 FontFamily="Consolas"
-                 VerticalAlignment="Stretch" />
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
-            <Button Content="Run Diagnostics" Command="{x:Bind ViewModel.RunDiagnosticsCommand}" Style="{StaticResource AccentButtonStyle}" />
-            <Button Content="Export to File" Click="Export_Click" />
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="Diagnostics" Style="{StaticResource TitleTextBlockStyle}" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Run Full Diagnostic" Click="RunDiagnostic_Click" />
+                <Button Content="Export Report" Click="ExportReport_Click" />
+            </StackPanel>
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
+                <TextBlock x:Name="DiagnosticOutput" Text="Click 'Run Full Diagnostic' to scan your system." TextWrapping="Wrap" FontFamily="Consolas" />
+            </Border>
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </Page>

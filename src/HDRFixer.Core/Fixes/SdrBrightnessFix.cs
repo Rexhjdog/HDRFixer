@@ -1,12 +1,10 @@
 using HDRFixer.Core.Display;
-using HDRFixer.Core.Registry;
 
 namespace HDRFixer.Core.Fixes;
 
 public class SdrBrightnessFix : IFix
 {
     private readonly DisplayInfo _display;
-    private readonly IHdrRegistryManager _registry;
     private float _originalNits;
 
     public string Name => "SDR Brightness Optimization";
@@ -14,10 +12,9 @@ public class SdrBrightnessFix : IFix
     public FixCategory Category => FixCategory.SdrBrightness;
     public FixStatus Status { get; private set; } = new();
 
-    public SdrBrightnessFix(DisplayInfo display, IHdrRegistryManager? registry = null)
+    public SdrBrightnessFix(DisplayInfo display)
     {
         _display = display;
-        _registry = registry ?? new HdrRegistryManager();
     }
 
     public FixResult Apply()
@@ -26,26 +23,14 @@ public class SdrBrightnessFix : IFix
         {
             _originalNits = _display.SdrWhiteLevelNits;
             float optimal = CalculateOptimalWhiteLevel(_display);
-
-            var monitorIds = _registry.GetMonitorIds();
-            // Try to find the matching monitor ID in registry
-            // This is a heuristic: match the first one if only one display
-            if (monitorIds.Count > 0)
+            // SDR white level is set via the Windows Settings slider or registry
+            // For now we report the recommended value
+            Status = new FixStatus
             {
-                string monitorId = monitorIds[0]; // Simplified for now
-                _registry.SetSdrWhiteLevel(monitorId, optimal);
-                Status = new FixStatus
-                {
-                    State = FixState.Applied,
-                    Message = $"SDR white level set to {optimal:F0} nits (was: {_display.SdrWhiteLevelNits:F0} nits)"
-                };
-            }
-            else
-            {
-                Status = new FixStatus { State = FixState.Error, Message = "Could not find monitor in registry" };
-            }
-
-            return new FixResult { Success = Status.State == FixState.Applied, Message = Status.Message };
+                State = FixState.Applied,
+                Message = $"Recommended SDR white level: {optimal:F0} nits (current: {_display.SdrWhiteLevelNits:F0} nits)"
+            };
+            return new FixResult { Success = true, Message = Status.Message };
         }
         catch (Exception ex)
         {

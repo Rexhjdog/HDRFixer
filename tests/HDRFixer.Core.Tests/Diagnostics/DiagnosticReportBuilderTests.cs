@@ -20,10 +20,7 @@ public class DiagnosticReportBuilderTests
     {
         var builder = new DiagnosticReportBuilder();
         var report = builder.Build(detector: new FakeDetector());
-        if (OperatingSystem.IsWindows())
-            Assert.True(report.OsBuild > 0);
-        else
-            Assert.NotNull(report.OsVersion);
+        Assert.True(report.OsBuild > 0);
     }
 
     [Fact]
