@@ -6,12 +6,19 @@ namespace HDRFixer.Core.Diagnostics;
 
 public class DiagnosticReportBuilder
 {
-    public DiagnosticReport Build(FixEngine? engine = null, IDisplayDetector? detector = null)
+    public DiagnosticReport Build(FixEngine? engine = null, IDisplayDetector? detector = null, List<DisplayInfo>? preDetectedDisplays = null)
     {
-        detector ??= new DxgiDisplayDetector();
         List<DisplayInfo> displays;
-        try { displays = detector.DetectDisplays(); }
-        catch { displays = new List<DisplayInfo>(); }
+        if (preDetectedDisplays != null)
+        {
+            displays = preDetectedDisplays;
+        }
+        else
+        {
+            detector ??= new DxgiDisplayDetector();
+            try { displays = detector.DetectDisplays(); }
+            catch { displays = new List<DisplayInfo>(); }
+        }
 
         var report = new DiagnosticReport
         {
