@@ -3,6 +3,15 @@ using System.Text;
 
 namespace HDRFixer.Core.Display;
 
+public class HdrMetadata
+{
+    public bool Supported { get; set; }
+    public float MaxLuminance { get; set; }
+    public float MinLuminance { get; set; }
+    public float MaxCll { get; set; }
+    public float MaxFall { get; set; }
+}
+
 public static class EdidParser
 {
     public static string ParseManufacturerId(byte[] edid)
@@ -30,6 +39,44 @@ public static class EdidParser
         return null;
     }
 
+    public static HdrMetadata ParseHdrMetadata(byte[] edid)
+    {
+        var metadata = new HdrMetadata();
+        if (edid.Length < 256) return metadata; // Need at least one extension block
+
+        int extBlocks = edid[126];
+        for (int b = 1; b <= extBlocks; b++)
+        {
+            int blockOffset = b * 128;
+            if (edid[blockOffset] != 0x02) continue; // Not a CEA block
+
+            int dOffset = blockOffset + 4;
+            int dEnd = blockOffset + edid[blockOffset + 2];
+
+            while (dOffset < dEnd)
+            {
+                int tag = (edid[dOffset] & 0xE0) >> 5;
+                int len = edid[dOffset] & 0x1F;
+
+                if (tag == 0x07) // Extended Tag
+                {
+                    int extTag = edid[dOffset + 1];
+                    if (extTag == 0x06) // HDR Static Metadata Data Block
+                    {
+                        metadata.Supported = true;
+                        if (len >= 3)
+                        {
+                            // Simplified parsing of luminance data if present
+                            // This varies by EDID version and spec
+                        }
+                    }
+                }
+                dOffset += 1 + len;
+            }
+        }
+        return metadata;
+    }
+
     public static ushort ParseProductCode(byte[] edid)
     {
         if (edid.Length < 128)
@@ -45,25 +92,14 @@ public class EdidWmiReader
         var results = new List<(string, byte[])>();
         try
         {
-            using var mc = new ManagementClass(@"\\.\root\wmi:WmiMonitorDescriptorMethods");
-            foreach (ManagementObject mo in mc.GetInstances())
+            using var searcher = new ManagementObjectSearcher(@"root\wmi", "SELECT * FROM WmiMonitorID");
+            foreach (ManagementObject mo in searcher.Get())
             {
                 string instanceName = mo["InstanceName"]?.ToString() ?? "Unknown";
-                var edidBytes = new List<byte>();
-                for (int blockId = 0; blockId < 256; blockId++)
+                if (mo["BaseEdidCode"] is byte[] edid)
                 {
-                    try
-                    {
-                        var inParams = mo.GetMethodParameters("WmiGetMonitorRawEEdidV1Block");
-                        inParams["BlockId"] = blockId;
-                        var outParams = mo.InvokeMethod("WmiGetMonitorRawEEdidV1Block", inParams, null);
-                        byte[] block = (byte[])outParams["BlockContent"];
-                        edidBytes.AddRange(block);
-                    }
-                    catch { break; }
+                    results.Add((instanceName, edid));
                 }
-                if (edidBytes.Count >= 128)
-                    results.Add((instanceName, edidBytes.ToArray()));
             }
         }
         catch { /* WMI not available */ }

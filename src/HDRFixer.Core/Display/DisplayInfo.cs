@@ -12,6 +12,7 @@ public class DisplayInfo
 {
     public string DeviceName { get; set; } = string.Empty;
     public string MonitorName { get; set; } = string.Empty;
+    public string MonitorDevicePath { get; set; } = string.Empty;
     public string GpuName { get; set; } = string.Empty;
     public GpuVendor GpuVendor { get; set; } = GpuVendor.Unknown;
     public bool IsHdrEnabled { get; set; }

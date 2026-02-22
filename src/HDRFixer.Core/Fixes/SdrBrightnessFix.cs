@@ -28,16 +28,21 @@ public class SdrBrightnessFix : IFix
             float optimal = CalculateOptimalWhiteLevel(_display);
 
             var monitorIds = _registry.GetMonitorIds();
-            // Try to find the matching monitor ID in registry
-            // This is a heuristic: match the first one if only one display
-            if (monitorIds.Count > 0)
+            // Match the display using MonitorDevicePath
+            string? monitorId = monitorIds.FirstOrDefault(id =>
+                !string.IsNullOrEmpty(_display.MonitorDevicePath) &&
+                _display.MonitorDevicePath.Contains(id, StringComparison.OrdinalIgnoreCase));
+
+            // Fallback to first if only one display detected overall
+            if (monitorId == null && monitorIds.Count == 1) monitorId = monitorIds[0];
+
+            if (monitorId != null)
             {
-                string monitorId = monitorIds[0]; // Simplified for now
                 _registry.SetSdrWhiteLevel(monitorId, optimal);
                 Status = new FixStatus
                 {
                     State = FixState.Applied,
-                    Message = $"SDR white level set to {optimal:F0} nits (was: {_display.SdrWhiteLevelNits:F0} nits)"
+                    Message = $"SDR white level set to {optimal:F0} nits for {monitorId} (was: {_display.SdrWhiteLevelNits:F0} nits)"
                 };
             }
             else

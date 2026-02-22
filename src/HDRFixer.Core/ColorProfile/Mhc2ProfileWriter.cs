@@ -14,22 +14,24 @@ public static class Mhc2ProfileWriter
 
         WriteTag(w, "MHC2");
         WriteBE32(w, 0); // Reserved
-        WriteBE32(w, lutSize);
+        WriteBE32(w, 3); // Number of components (R, G, B)
         WriteBE32(w, ToS15F16(minNits));
         WriteBE32(w, ToS15F16(maxNits));
 
         int matrixOffset = 32;
-        int lut1Offset = 0; // Identity/Bypassed
-        int lut2Offset = matrixOffset + 48; // Matrix is 3x4 * 4 bytes = 48 bytes
+        int lut1Offset = 0; // Bypassed
+        int lut2Offset = matrixOffset + 48; // 32 + 48 = 80
 
         WriteBE32(w, matrixOffset);
         WriteBE32(w, lut1Offset);
         WriteBE32(w, lut2Offset);
 
+        // Matrix (32-79)
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 4; c++)
                 WriteBE32(w, ToS15F16(matrix3x4[r, c]));
 
+        // LUT2 (starts at 80)
         for (int ch = 0; ch < 3; ch++)
         {
             WriteTag(w, "sf32");
@@ -84,21 +86,40 @@ public static class Mhc2ProfileWriter
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
 
-        WriteBE32(w, profileSize); WriteBE32(w, 0); WriteBE32(w, 0x04400000);
-        WriteBE32(w, 0x6D6E7472); WriteBE32(w, 0x52474220); WriteBE32(w, 0x58595A20);
-        WriteBE16(w, 2026); WriteBE16(w, 2); WriteBE16(w, 18);
-        WriteBE16(w, 0); WriteBE16(w, 0); WriteBE16(w, 0);
-        WriteBE32(w, 0x61637370); WriteBE32(w, 0x4D534654);
-        WriteBE32(w, 0); WriteBE32(w, 0); WriteBE32(w, 0);
-        WriteBE32(w, 0); WriteBE32(w, 0); WriteBE32(w, 0); WriteBE32(w, 0); WriteBE32(w, 0);
-        WriteBE32(w, ToS15F16(0.9642)); WriteBE32(w, ToS15F16(1.0000)); WriteBE32(w, ToS15F16(0.8249));
-        WriteBE32(w, 0);
-        for (int i = 0; i < 16; i++) w.Write((byte)0);
-        for (int i = 0; i < 20; i++) w.Write((byte)0);
+        WriteBE32(w, profileSize);
+        WriteBE32(w, 0); // Preferred CMM Type
+        WriteBE32(w, 0x04400000); // Profile version 4.4
+        WriteBE32(w, 0x6D6E7472); // 'mntr'
+        WriteBE32(w, 0x52474220); // 'RGB '
+        WriteBE32(w, 0x58595A20); // 'XYZ '
+        WriteBE16(w, (ushort)DateTime.UtcNow.Year);
+        WriteBE16(w, (ushort)DateTime.UtcNow.Month);
+        WriteBE16(w, (ushort)DateTime.UtcNow.Day);
+        WriteBE16(w, (ushort)DateTime.UtcNow.Hour);
+        WriteBE16(w, (ushort)DateTime.UtcNow.Minute);
+        WriteBE16(w, (ushort)DateTime.UtcNow.Second);
+        WriteBE32(w, 0x61637370); // 'acsp'
+        WriteBE32(w, 0x4D534654); // 'MSFT'
+        WriteBE32(w, 0); // Profile flags
+        WriteBE32(w, 0); // Device manufacturer
+        WriteBE32(w, 0); // Device model
+        WriteBE32(w, 0); // Attributes (upper)
+        WriteBE32(w, 0); // Attributes (lower)
+        WriteBE32(w, 0); // Rendering intent
+        WriteBE32(w, ToS15F16(0.9642)); // Illuminant X
+        WriteBE32(w, ToS15F16(1.0000)); // Illuminant Y
+        WriteBE32(w, ToS15F16(0.8249)); // Illuminant Z
+        WriteBE32(w, 0); // Creator
+        for (int i = 0; i < 16; i++) w.Write((byte)0); // ID
+        while (ms.Length < 128) w.Write((byte)0); // Pad to exactly 128 bytes
 
         WriteBE32(w, tags.Length);
         for (int i = 0; i < tags.Length; i++)
-        { WriteBE32(w, tags[i].sig); WriteBE32(w, tagOffsets[i]); WriteBE32(w, tagSizes[i]); }
+        {
+            WriteBE32(w, tags[i].sig);
+            WriteBE32(w, tagOffsets[i]);
+            WriteBE32(w, tagSizes[i]);
+        }
 
         while (ms.Length < dataOffset) w.Write((byte)0);
         for (int i = 0; i < tags.Length; i++)

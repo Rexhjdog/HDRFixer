@@ -21,6 +21,7 @@ public static class FixEngineFactory
         engine.Register(new SdrBrightnessFix(primaryDisplay));
         engine.Register(new AutoHdrFix());
         engine.Register(new PixelFormatFix(primaryDisplay));
+        engine.Register(new IccConflictFix(primaryDisplay, installer));
         
         return engine;
     }

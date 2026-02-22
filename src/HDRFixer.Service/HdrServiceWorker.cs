@@ -50,9 +50,10 @@ public class HdrServiceWorker : BackgroundService
                 RunWatchdog();
             }
 
-            // In a real implementation, we would wait for WM_DISPLAYCHANGE
-            // Here we poll every 30 seconds for simplicity in this "remake"
-            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            _oledGuardian.CheckIdleness();
+
+            // Poll every 10 seconds for more responsive OLED protection
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
 
         _oledGuardian.RevertAll();

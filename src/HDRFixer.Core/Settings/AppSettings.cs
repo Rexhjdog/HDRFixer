@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace HDRFixer.Core.Settings;
 
@@ -30,6 +31,31 @@ public class SettingsManager
     public void Save(AppSettings settings)
     {
         File.WriteAllText(_settingsPath, JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
+        UpdateStartupRegistry(settings.RunAtStartup);
+    }
+
+    private void UpdateStartupRegistry(bool runAtStartup)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKey, writable: true);
+            if (key == null) return;
+
+            if (runAtStartup)
+            {
+                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (!string.IsNullOrEmpty(exePath))
+                    key.SetValue("HDRFixer", exePath);
+            }
+            else
+            {
+                key.DeleteValue("HDRFixer", false);
+            }
+        }
+        catch { /* Handle registry access errors */ }
     }
 
     public AppSettings Load()

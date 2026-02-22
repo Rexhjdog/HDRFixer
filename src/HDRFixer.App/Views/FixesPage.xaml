@@ -6,8 +6,17 @@
     xmlns:vm="using:HDRFixer.App.ViewModels">
     <ScrollViewer Padding="24">
         <StackPanel Spacing="16">
-            <TextBlock Text="{x:Bind ViewModel.Title}" Style="{StaticResource TitleTextBlockStyle}" />
-            <TextBlock Text="Apply and manage HDR correction fixes" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{x:Bind ViewModel.Title}" Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Apply and manage HDR correction fixes" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Revert All" Command="{x:Bind ViewModel.RevertAllCommand}" VerticalAlignment="Bottom" />
+            </Grid>
 
             <ItemsControl ItemsSource="{x:Bind ViewModel.Fixes}">
                 <ItemsControl.ItemTemplate>

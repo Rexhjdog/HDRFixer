@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace HDRFixer.Core.ColorProfile;
 
@@ -30,4 +31,10 @@ internal static class WcsNativeMethods
 
     [DllImport("Mscms.dll", CharSet = CharSet.Unicode)]
     public static extern int ColorProfileRemoveDisplayAssociation(WCS_PROFILE_MANAGEMENT_SCOPE scope, string profileName, LUID targetAdapterID, uint sourceID, [MarshalAs(UnmanagedType.Bool)] bool dissociateAdvancedColor);
+
+    [DllImport("Mscms.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool WcsGetDefaultColorProfileSize(WCS_PROFILE_MANAGEMENT_SCOPE scope, string pDeviceName, uint cpt, uint cpst, uint dwPredefinedIndex, out uint pcbSize);
+
+    [DllImport("Mscms.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern bool WcsGetDefaultColorProfile(WCS_PROFILE_MANAGEMENT_SCOPE scope, string pDeviceName, uint cpt, uint cpst, uint dwPredefinedIndex, uint cbSize, [Out] StringBuilder pProfileName);
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Management;
 using Microsoft.Win32;
 
 namespace HDRFixer.Core.OledProtection;
@@ -29,6 +30,7 @@ public class OledGuardian
 {
     private readonly OledProtectionSettings _settings;
     private readonly OledUsageTracker _tracker;
+    private bool _isDimmed = false;
 
     public OledGuardian(OledProtectionSettings settings)
     {
@@ -47,7 +49,31 @@ public class OledGuardian
     {
         if (_settings.AutoHideTaskbar) SetAutoHideTaskbar(false);
         if (_settings.DarkModeEnforced) SetDarkMode(false);
+        if (_isDimmed) SetBrightness(100); // Reset brightness if we dimmed it
         _tracker.Stop();
+    }
+
+    public void CheckIdleness()
+    {
+        uint idleTimeMs = GetIdleTime();
+        uint timeoutMs = (uint)_settings.StaticContentTimeoutMinutes * 60 * 1000;
+
+        if (idleTimeMs > timeoutMs)
+        {
+            if (!_isDimmed)
+            {
+                SetBrightness(30); // Dim to 30%
+                _isDimmed = true;
+            }
+        }
+        else
+        {
+            if (_isDimmed)
+            {
+                SetBrightness(100); // Restore to 100% (or previous)
+                _isDimmed = false;
+            }
+        }
     }
 
     private void SetAutoHideTaskbar(bool enable)
@@ -57,7 +83,7 @@ public class OledGuardian
         data.hWnd = FindWindow("Shell_TrayWnd", null);
         if (data.hWnd == IntPtr.Zero) return;
 
-        data.lParam = enable ? (IntPtr)0x01 : (IntPtr)0x02; // 0x01 = ABS_AUTOHIDE, 0x02 = ABS_ALWAYSONTOP (standard)
+        data.lParam = enable ? (IntPtr)0x01 : (IntPtr)0x02;
         SHAppBarMessage(ABM_SETSTATE, ref data);
     }
 
@@ -67,10 +93,32 @@ public class OledGuardian
         using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(PersonalizeKey, writable: true);
         if (key != null)
         {
-            int val = enable ? 0 : 1; // 0 is Dark, 1 is Light for Apps/SystemUseLightTheme
+            int val = enable ? 0 : 1;
             key.SetValue("AppsUseLightTheme", val, RegistryValueKind.DWord);
             key.SetValue("SystemUsesLightTheme", val, RegistryValueKind.DWord);
         }
+    }
+
+    private void SetBrightness(int brightness)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try
+        {
+            using var searcher = new ManagementObjectSearcher(@"root\wmi", "SELECT * FROM WmiMonitorBrightnessMethods");
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                mo.InvokeMethod("WmiSetBrightness", new object[] { (uint)0, (byte)brightness });
+            }
+        }
+        catch { /* WMI access might fail without elevation */ }
+    }
+
+    private uint GetIdleTime()
+    {
+        var lastInputInfo = new LASTINPUTINFO();
+        lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
+        if (!GetLastInputInfo(ref lastInputInfo)) return 0;
+        return (uint)Environment.TickCount - lastInputInfo.dwTime;
     }
 
     private const int ABM_SETSTATE = 0x0000000a;
@@ -89,9 +137,19 @@ public class OledGuardian
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT { public int Left, Top, Right, Bottom; }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct LASTINPUTINFO
+    {
+        public uint cbSize;
+        public uint dwTime;
+    }
+
     [DllImport("shell32.dll")]
     private static extern IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern IntPtr FindWindow(string lpClassName, string? lpWindowName);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
 }

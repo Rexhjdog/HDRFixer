@@ -16,6 +16,7 @@ public sealed partial class DiagnosticsPage : Page
 
     private void Export_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: Implement file export
+        var savePath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "HDRFixer_Report.txt");
+        ViewModel.ExportReportCommand.Execute(savePath);
     }
 }

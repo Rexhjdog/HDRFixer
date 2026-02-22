@@ -24,6 +24,16 @@ public partial class DiagnosticsViewModel : BaseViewModel
 
     public IRelayCommand RunDiagnosticsCommand { get; }
 
+    [RelayCommand]
+    public void ExportReport(string filePath)
+    {
+        try
+        {
+            System.IO.File.WriteAllText(filePath, FullReportText);
+        }
+        catch (Exception) { /* Handle error */ }
+    }
+
     public void RunDiagnostics()
     {
         IsBusy = true;

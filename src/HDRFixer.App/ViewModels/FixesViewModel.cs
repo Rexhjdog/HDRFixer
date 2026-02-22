@@ -62,6 +62,13 @@ public partial class FixesViewModel : BaseViewModel
 
     public IRelayCommand RefreshCommand { get; }
 
+    [RelayCommand]
+    public void RevertAll()
+    {
+        _fixEngine.RevertAll();
+        Refresh();
+    }
+
     public void Refresh()
     {
         IsBusy = true;

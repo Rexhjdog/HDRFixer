@@ -63,6 +63,7 @@ public class DxgiDisplayDetector : IDisplayDetector
                 if (match != null)
                 {
                     info.MonitorName = match.MonitorFriendlyName;
+                    info.MonitorDevicePath = match.MonitorDevicePath;
                     info.SourceId = match.SourceId;
                     info.TargetId = match.TargetId;
                     info.SdrWhiteLevelNits = match.SdrWhiteLevel;
@@ -78,6 +79,7 @@ public class DxgiDisplayDetector : IDisplayDetector
     {
         public string DeviceName { get; set; } = string.Empty;
         public string MonitorFriendlyName { get; set; } = string.Empty;
+        public string MonitorDevicePath { get; set; } = string.Empty;
         public uint SourceId { get; set; }
         public uint TargetId { get; set; }
         public float SdrWhiteLevel { get; set; }
@@ -134,7 +136,10 @@ public class DxgiDisplayDetector : IDisplayDetector
                 pathInfo.DeviceName = sourceName.viewGdiDeviceName;
 
             if (DisplayConfigNativeMethods.DisplayConfigGetDeviceInfo(ref targetName) == 0)
+            {
                 pathInfo.MonitorFriendlyName = targetName.monitorFriendlyDeviceName;
+                pathInfo.MonitorDevicePath = targetName.monitorDevicePath;
+            }
 
             if (DisplayConfigNativeMethods.DisplayConfigGetDeviceInfo(ref whiteLevel) == 0)
                 pathInfo.SdrWhiteLevel = (whiteLevel.SDRWhiteLevel / 1000f) * 80f;
