@@ -63,7 +63,7 @@ public partial class DashboardViewModel : BaseViewModel
             }
 
             var builder = new DiagnosticReportBuilder();
-            var report = builder.Build(_fixEngine, _detector);
+            var report = builder.Build(_fixEngine, _detector, displays);
             HealthScore = _healthCalculator.Calculate(report);
             HealthLabel = $"{HealthScore}/100 - {(HealthScore >= 80 ? "Excellent" : HealthScore >= 50 ? "Needs Work" : "Poor")}";
         }
