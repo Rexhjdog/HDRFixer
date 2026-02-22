@@ -36,8 +36,12 @@ public static class IccBinaryHelpers
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
         WriteTag(w, "mluc"); WriteBE32(w, 0); WriteBE32(w, 1); WriteBE32(w, 12);
-        WriteBE16(w, (ushort)'e'); WriteBE16(w, (ushort)'n');
-        WriteBE16(w, (ushort)'U'); WriteBE16(w, (ushort)'S');
+
+        // Language 'en' (0x656E)
+        WriteBE16(w, 0x656E);
+        // Country 'US' (0x5553)
+        WriteBE16(w, 0x5553);
+
         var encoded = Encoding.BigEndianUnicode.GetBytes(text);
         WriteBE32(w, encoded.Length); WriteBE32(w, 28);
         w.Write(encoded);
