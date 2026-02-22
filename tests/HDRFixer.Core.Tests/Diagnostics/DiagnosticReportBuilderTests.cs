@@ -87,6 +87,7 @@ public class DiagnosticReportBuilderTests
         {
             new DisplayInfo { DeviceName = "Test", IsHdrEnabled = true, BitsPerColor = 10, MaxLuminance = 800f }
         };
+        public void Dispose() {}
     }
 
     private class LowBitDetector : IDisplayDetector
@@ -95,11 +96,13 @@ public class DiagnosticReportBuilderTests
         {
             new DisplayInfo { DeviceName = "Test", BitsPerColor = 8 }
         };
+        public void Dispose() {}
     }
 
     private class EmptyDetector : IDisplayDetector
     {
         public List<DisplayInfo> DetectDisplays() => new();
+        public void Dispose() {}
     }
 
     private class AppliedTestFix : IFix

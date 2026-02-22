@@ -6,12 +6,33 @@ namespace HDRFixer.Core.Display;
 
 public class DxgiDisplayDetector : IDisplayDetector
 {
+    private IDXGIFactory2? _factory;
+
+    public void Dispose()
+    {
+        _factory?.Dispose();
+        _factory = null;
+        GC.SuppressFinalize(this);
+    }
+
     public List<DisplayInfo> DetectDisplays()
     {
         var displays = new List<DisplayInfo>();
         var configPaths = QueryConfigPaths();
 
-        using IDXGIFactory2 factory = CreateDXGIFactory1<IDXGIFactory2>();
+        if (_factory != null && !_factory.IsCurrent)
+        {
+            _factory.Dispose();
+            _factory = null;
+        }
+
+        if (_factory == null)
+        {
+            _factory = CreateDXGIFactory1<IDXGIFactory2>();
+        }
+
+        // Use cached factory
+        var factory = _factory;
 
         for (int adapterIndex = 0;
              factory.EnumAdapters1(adapterIndex, out IDXGIAdapter1? adapter).Success;
