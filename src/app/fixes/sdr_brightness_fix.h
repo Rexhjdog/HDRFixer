@@ -22,7 +22,7 @@ private:
     // Calculate the optimal SDR white level based on panel max luminance.
     float optimal_white_level() const;
 
-    const display::DisplayInfo& display_;
+    display::DisplayInfo display_;
 };
 
 } // namespace hdrfixer::fixes

@@ -27,16 +27,23 @@ static std::unique_ptr<ui::TrayIcon> g_tray;
 static config::SettingsManager g_settings;
 static std::vector<display::DisplayInfo> g_displays;
 
+static std::string wide_to_utf8(const std::wstring& wide) {
+    if (wide.empty()) return {};
+    int size = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (size <= 0) return {};
+    std::string result(static_cast<size_t>(size - 1), '\0');  // -1 to exclude null terminator
+    WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), -1, result.data(), size, nullptr, nullptr);
+    return result;
+}
+
 static void refresh_displays() {
     auto result = display::detect_displays();
     if (result.has_value()) {
         g_displays = std::move(result.value());
         LOG_INFO(std::format("Detected {} display(s)", g_displays.size()));
         for (const auto& d : g_displays) {
-            std::string narrow_name(d.device_name.size(), '\0');
-            WideCharToMultiByte(CP_UTF8, 0, d.device_name.c_str(), -1, narrow_name.data(), static_cast<int>(narrow_name.size()), nullptr, nullptr);
             LOG_INFO(std::format("  {} - HDR:{} {}bpc MaxLum:{:.0f}nits SDRWhite:{:.0f}nits",
-                narrow_name,
+                wide_to_utf8(d.device_name),
                 d.is_hdr_enabled ? "ON" : "OFF",
                 d.bits_per_color,
                 d.max_luminance,
@@ -65,12 +72,13 @@ static void build_fix_engine() {
     LOG_INFO(std::format("Fix engine initialized with {} fixes", g_engine->fix_count()));
 }
 
-static void on_watchdog_trigger() {
+// Called on the MAIN THREAD via WM_WATCHDOG_TRIGGER posted from the watchdog bg thread.
+static void on_watchdog_trigger_main_thread() {
     if (!g_engine) return;
     LOG_INFO("Watchdog triggered, diagnosing fixes...");
     auto statuses = g_engine->diagnose_all();
     for (const auto& s : statuses) {
-        if (s.state == fixes::FixState::Error || s.state == fixes::FixState::NotApplied) {
+        if (s.state == fixes::FixState::NotApplied) {
             LOG_INFO("Re-applying fixes due to detected changes");
             g_engine->apply_all();
             if (g_tray) {
@@ -101,8 +109,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
         return 0;
     }
 
-    // Initialize COM (needed for DXGI)
-    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    // Initialize COM (STA for UI thread with message pump)
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
     // Load settings
     (void)g_settings.load();
@@ -132,7 +140,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     };
     callbacks.on_share_mode = [] {
         if (!g_engine) return;
-        auto* share = dynamic_cast<fixes::ShareHelper*>(g_engine->get_fix("Screen-Share Helper"));
+        auto* share = dynamic_cast<fixes::ShareHelper*>(g_engine->get_fix("Screen Share Helper"));
         if (share) {
             auto status = share->diagnose();
             if (status.state == fixes::FixState::Applied) {
@@ -157,6 +165,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
         if (g_engine) g_engine->revert_all();
         PostQuitMessage(0);
     };
+    callbacks.on_watchdog_trigger = on_watchdog_trigger_main_thread;
+    callbacks.on_display_change = on_display_change;
 
     g_tray = std::make_unique<ui::TrayIcon>(hInstance, callbacks);
     if (!g_tray->create()) {
@@ -171,9 +181,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     g_hotplug = std::make_unique<fixes::Hotplug>();
     g_hotplug->register_hotplug(g_tray->hwnd());
 
-    // Start watchdog
+    // Start watchdog — callback posts to main thread to avoid data races
     if (g_settings.get().enable_fix_watchdog) {
-        g_watchdog = std::make_unique<fixes::Watchdog>(on_watchdog_trigger);
+        HWND tray_hwnd = g_tray->hwnd();
+        g_watchdog = std::make_unique<fixes::Watchdog>([tray_hwnd] {
+            PostMessage(tray_hwnd, ui::WM_WATCHDOG_TRIGGER, 0, 0);
+        });
         g_watchdog->start();
         LOG_INFO("Registry watchdog started");
     }

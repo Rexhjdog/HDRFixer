@@ -15,12 +15,18 @@ constexpr UINT IDM_EXIT = 1005;
 constexpr int HOTKEY_TOGGLE = 1;   // Ctrl+Shift+H
 constexpr int HOTKEY_SHARE = 2;    // Ctrl+Shift+S
 
+// Custom window messages
+constexpr UINT WM_WATCHDOG_TRIGGER = WM_APP + 2;
+constexpr UINT WM_DISPLAY_CHANGE = WM_APP + 3;
+
 struct TrayCallbacks {
     std::function<void()> on_apply_all;
     std::function<void()> on_revert_all;
     std::function<void()> on_share_mode;
     std::function<void()> on_settings;
     std::function<void()> on_exit;
+    std::function<void()> on_watchdog_trigger;
+    std::function<void()> on_display_change;
 };
 
 class TrayIcon {

@@ -1,5 +1,6 @@
 #include "app/ui/tray.h"
 #include <shellapi.h>
+#include <dbt.h>
 
 namespace hdrfixer::ui {
 
@@ -7,6 +8,7 @@ namespace {
 constexpr UINT WM_TRAYICON = WM_APP + 1;
 constexpr wchar_t WNDCLASS_NAME[] = L"HDRFixerTrayClass";
 constexpr UINT TRAY_ICON_ID = 1;
+static UINT WM_TASKBAR_CREATED = 0;
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -74,6 +76,9 @@ bool TrayIcon::create() {
     RegisterHotKey(hwnd_, HOTKEY_TOGGLE, MOD_CONTROL | MOD_SHIFT, 'H');
     // Ctrl+Shift+S -- share mode
     RegisterHotKey(hwnd_, HOTKEY_SHARE, MOD_CONTROL | MOD_SHIFT, 'S');
+
+    // Register for TaskbarCreated so we can re-add the icon after explorer restarts
+    WM_TASKBAR_CREATED = RegisterWindowMessageW(L"TaskbarCreated");
 
     return true;
 }
@@ -153,6 +158,21 @@ void TrayIcon::set_share_mode(bool active) {
 LRESULT CALLBACK TrayIcon::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     auto* self = reinterpret_cast<TrayIcon*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
+    // Handle TaskbarCreated (registered dynamically, so can't be in the switch)
+    if (WM_TASKBAR_CREATED && msg == WM_TASKBAR_CREATED && self) {
+        // Explorer restarted — re-add the tray icon
+        NOTIFYICONDATAW nid{};
+        nid.cbSize = sizeof(nid);
+        nid.hWnd = hwnd;
+        nid.uID = TRAY_ICON_ID;
+        nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+        nid.uCallbackMessage = WM_TRAYICON;
+        nid.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+        wcscpy_s(nid.szTip, L"HDRFixer");
+        Shell_NotifyIconW(NIM_ADD, &nid);
+        return 0;
+    }
+
     switch (msg) {
 
     case WM_TRAYICON:
@@ -186,16 +206,36 @@ LRESULT CALLBACK TrayIcon::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_HOTKEY:
         if (self) {
             if (wParam == HOTKEY_TOGGLE) {
-                // Toggle: if share mode is active, revert; otherwise apply
-                if (self->callbacks_.on_apply_all) self->callbacks_.on_apply_all();
+                // Toggle: apply if not applied, revert if applied
+                if (self->share_mode_) {
+                    if (self->callbacks_.on_revert_all) self->callbacks_.on_revert_all();
+                } else {
+                    if (self->callbacks_.on_apply_all) self->callbacks_.on_apply_all();
+                }
             } else if (wParam == HOTKEY_SHARE) {
                 if (self->callbacks_.on_share_mode) self->callbacks_.on_share_mode();
             }
         }
         return 0;
 
+    // C2 fix: watchdog posts to main thread instead of calling directly
+    case WM_WATCHDOG_TRIGGER:
+        if (self && self->callbacks_.on_watchdog_trigger) {
+            self->callbacks_.on_watchdog_trigger();
+        }
+        return 0;
+
+    // C3 fix: handle display hotplug notifications
+    case WM_DEVICECHANGE:
+        if (self && self->callbacks_.on_display_change) {
+            if (wParam == DBT_DEVICEARRIVAL || wParam == DBT_DEVICEREMOVECOMPLETE) {
+                self->callbacks_.on_display_change();
+            }
+        }
+        return 0;
+
     case WM_DESTROY:
-        PostQuitMessage(0);
+        // Do NOT PostQuitMessage here — on_exit callback handles it
         return 0;
 
     default:

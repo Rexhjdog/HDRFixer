@@ -53,7 +53,7 @@ FixStatus PixelFormatFix::diagnose() {
     }
 
     return FixStatus{
-        FixState::Error,
+        FixState::NotNeeded,
         std::format("{}-bit color output detected.  Recommend enabling 10-bit "
                     "in GPU driver settings.  {}", bpc, vendor_hint)
     };

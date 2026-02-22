@@ -1,6 +1,6 @@
 #include "watchdog.h"
-#include "../../core/log/logger.h"
-#include "../../core/registry/hdr_registry.h"
+#include "core/log/logger.h"
+#include "core/registry/hdr_registry.h"
 
 namespace hdrfixer::fixes {
 
@@ -45,21 +45,22 @@ void Watchdog::start()
 
 void Watchdog::stop()
 {
-    if (!running_.load(std::memory_order_acquire)) {
-        return;
-    }
-
-    running_.store(false, std::memory_order_release);
+    bool was_running = running_.exchange(false, std::memory_order_acq_rel);
 
     // Wake the thread out of WaitForMultipleObjects.
     if (stop_event_) {
         ::SetEvent(stop_event_);
     }
 
+    // Always join if joinable — thread_func may have set running_ to false
+    // before we got here, but the thread still needs to be joined.
     if (thread_.joinable()) {
         thread_.join();
     }
-    LOG_INFO("Watchdog: stopped");
+
+    if (was_running) {
+        LOG_INFO("Watchdog: stopped");
+    }
 }
 
 void Watchdog::thread_func()

@@ -1,5 +1,5 @@
 #include "hotplug.h"
-#include "../../core/log/logger.h"
+#include "core/log/logger.h"
 
 #include <initguid.h>
 

@@ -21,7 +21,7 @@ public:
     FixResult revert() override;
 
 private:
-    const display::DisplayInfo& display_;
+    display::DisplayInfo display_;
 };
 
 } // namespace hdrfixer::fixes
