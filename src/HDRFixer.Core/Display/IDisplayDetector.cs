@@ -1,6 +1,6 @@
 namespace HDRFixer.Core.Display;
 
-public interface IDisplayDetector
+public interface IDisplayDetector : IDisposable
 {
     List<DisplayInfo> DetectDisplays();
 }

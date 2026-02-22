@@ -61,15 +61,18 @@ public class FixEngineFactoryTests
                 BitsPerColor = 10
             }
         };
+        public void Dispose() {}
     }
 
     private class EmptyDetector : IDisplayDetector
     {
         public List<DisplayInfo> DetectDisplays() => new();
+        public void Dispose() {}
     }
 
     private class ThrowingDetector : IDisplayDetector
     {
         public List<DisplayInfo> DetectDisplays() => throw new Exception("No GPU");
+        public void Dispose() {}
     }
 }

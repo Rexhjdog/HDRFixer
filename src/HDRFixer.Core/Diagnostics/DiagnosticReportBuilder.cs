@@ -8,10 +8,25 @@ public class DiagnosticReportBuilder
 {
     public DiagnosticReport Build(FixEngine? engine = null, IDisplayDetector? detector = null)
     {
-        detector ??= new DxgiDisplayDetector();
+        IDisplayDetector detectorToUse = detector ?? new DxgiDisplayDetector();
+        bool createdLocally = detector == null;
+
         List<DisplayInfo> displays;
-        try { displays = detector.DetectDisplays(); }
-        catch { displays = new List<DisplayInfo>(); }
+        try
+        {
+            displays = detectorToUse.DetectDisplays();
+        }
+        catch
+        {
+            displays = new List<DisplayInfo>();
+        }
+        finally
+        {
+            if (createdLocally)
+            {
+                detectorToUse.Dispose();
+            }
+        }
 
         var report = new DiagnosticReport
         {
