@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "core/display/edid_reader.h"
+#include <cstring>
 
 using namespace hdrfixer::display;
 
@@ -25,8 +26,8 @@ TEST_CASE("EDID monitor name from descriptor") {
     // Descriptor at offset 54: type 0xFC = monitor name
     edid[54] = 0; edid[55] = 0; edid[56] = 0; edid[57] = 0xFC; edid[58] = 0;
     const char* name = "Test Monitor";
-    std::memcpy(&edid[59], name, strlen(name));
-    edid[59 + strlen(name)] = '\n';
+    std::memcpy(&edid[59], name, std::strlen(name));
+    edid[59 + std::strlen(name)] = '\n';
     auto info = parse_edid(edid, 128);
     CHECK(info.has_value());
     CHECK(info->monitor_name == "Test Monitor");

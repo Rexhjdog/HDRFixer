@@ -1,5 +1,6 @@
 add_executable(HDRFixer WIN32
     main.cpp
+    resource.rc
     fixes/gamma_fix.cpp
     fixes/sdr_brightness_fix.cpp
     fixes/pixel_format_fix.cpp

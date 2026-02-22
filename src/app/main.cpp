@@ -159,7 +159,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
         }
     };
     callbacks.on_settings = [&hInstance] {
-        ui::show_settings_window(nullptr);
+        ui::show_settings_window(nullptr, g_settings);
     };
     callbacks.on_exit = [] {
         if (g_engine) g_engine->revert_all();

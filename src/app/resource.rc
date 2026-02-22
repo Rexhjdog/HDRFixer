@@ -1,0 +1,32 @@
+#include <windows.h>
+#include "resource.h"
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_APP                 ICON                    "app.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SETTINGS DIALOGEX 0, 0, 250, 160
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "HDRFixer Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "General",IDC_GRP_GENERAL,7,7,236,55
+    CONTROL         "Start with Windows",IDC_CHECK_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,20,100,10
+    CONTROL         "Enable Registry Watchdog",IDC_CHECK_WATCHDOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,35,100,10
+
+    LTEXT           "Log Level:",IDC_STATIC,140,20,35,8
+    COMBOBOX        IDC_COMBO_LOGLEVEL,180,18,55,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    GROUPBOX        "Display Settings (SDR Brightness)",IDC_GRP_DISPLAY,7,70,236,55
+    LTEXT           "White Level:",IDC_STATIC,14,85,40,8
+    CONTROL         "",IDC_SLIDER_BRIGHTNESS,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,60,85,130,20
+    CTEXT           "200 nits",IDC_LBL_BRIGHTNESS,195,85,40,8
+
+    DEFPUSHBUTTON   "OK",IDOK,139,139,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,193,139,50,14
+END
