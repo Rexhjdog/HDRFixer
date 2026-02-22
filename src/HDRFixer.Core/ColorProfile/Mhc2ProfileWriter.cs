@@ -11,13 +11,20 @@ public static class Mhc2ProfileWriter
         int lutSize = regammaLut.GetLength(1);
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
-        WriteTag(w, "MHC2"); WriteBE32(w, 0); WriteBE32(w, lutSize);
-        WriteBE32(w, ToS15F16(minNits)); WriteBE32(w, ToS15F16(maxNits));
-        WriteBE32(w, 36); WriteBE32(w, 84);
-        int lut1Off = 84 + 8 + lutSize * 4;
-        WriteBE32(w, lut1Off);
-        int lut2Off = lut1Off + 8 + lutSize * 4;
-        WriteBE32(w, lut2Off);
+
+        WriteTag(w, "MHC2");
+        WriteBE32(w, 0); // Reserved
+        WriteBE32(w, lutSize);
+        WriteBE32(w, ToS15F16(minNits));
+        WriteBE32(w, ToS15F16(maxNits));
+
+        int matrixOffset = 32;
+        int lut1Offset = 0; // Identity/Bypassed
+        int lut2Offset = matrixOffset + 48; // Matrix is 3x4 * 4 bytes = 48 bytes
+
+        WriteBE32(w, matrixOffset);
+        WriteBE32(w, lut1Offset);
+        WriteBE32(w, lut2Offset);
 
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 4; c++)
@@ -25,7 +32,8 @@ public static class Mhc2ProfileWriter
 
         for (int ch = 0; ch < 3; ch++)
         {
-            WriteTag(w, "sf32"); WriteBE32(w, 0);
+            WriteTag(w, "sf32");
+            WriteBE32(w, 0); // Reserved
             for (int i = 0; i < lutSize; i++)
                 WriteBE32(w, ToS15F16(regammaLut[ch, i]));
         }

@@ -7,7 +7,9 @@ public class GameHdrProfile
     public string ExecutablePath { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public bool ForceAutoHdr { get; set; }
-    public string ExecutableName => Path.GetFileName(ExecutablePath);
+    public string ExecutableName => ExecutablePath.Contains('\\')
+        ? ExecutablePath.Substring(ExecutablePath.LastIndexOf('\\') + 1)
+        : Path.GetFileName(ExecutablePath);
 }
 
 public class AutoHdrGameManager

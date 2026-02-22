@@ -2,36 +2,30 @@
 <Page
     x:Class="HDRFixer.App.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:HDRFixer.App.ViewModels">
     <ScrollViewer Padding="24">
         <StackPanel Spacing="16">
-            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="{x:Bind ViewModel.Title}" Style="{StaticResource TitleTextBlockStyle}" />
+
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
                 <StackPanel Spacing="12">
-                    <TextBlock Text="General" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <ToggleSwitch x:Name="StartupToggle" Header="Run at Windows startup" />
-                    <ToggleSwitch x:Name="TrayToggle" Header="Minimize to system tray" IsOn="True" />
-                    <ToggleSwitch x:Name="ServiceToggle" Header="Enable background service" IsOn="True" />
-                    <ToggleSwitch x:Name="WatchdogToggle" Header="Enable fix watchdog" IsOn="True" />
+                    <TextBlock Text="Application" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ToggleSwitch Header="Run at Startup" IsOn="{x:Bind ViewModel.RunAtStartup, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Minimize to Tray" IsOn="{x:Bind ViewModel.MinimizeToTray, Mode=TwoWay}" />
                 </StackPanel>
             </Border>
+
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Backup &amp; Restore" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Save Settings" Click="SaveSettings_Click" />
-                        <Button Content="Reset to Defaults" Click="ResetSettings_Click" />
-                    </StackPanel>
-                    <TextBlock x:Name="SettingsStatus" Opacity="0.7" />
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Background Service" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <ToggleSwitch Header="Enable Background Service" IsOn="{x:Bind ViewModel.EnableBackgroundService, Mode=TwoWay}" />
+                    <ToggleSwitch Header="Enable Fix Watchdog" IsOn="{x:Bind ViewModel.EnableFixWatchdog, Mode=TwoWay}"
+                                  ToolTipService.ToolTip="Automatically re-applies fixes if Windows reverts them" />
                 </StackPanel>
             </Border>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="About" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBlock Text="HDRFixer v1.0" />
-                    <TextBlock Text="Windows 11 HDR Fix and Enhancement Toolkit" Opacity="0.7" />
-                </StackPanel>
-            </Border>
+
+            <TextBlock Text="HDRFixer v2.0.0" HorizontalAlignment="Center" Opacity="0.5" Margin="0,32,0,0" />
         </StackPanel>
     </ScrollViewer>
 </Page>

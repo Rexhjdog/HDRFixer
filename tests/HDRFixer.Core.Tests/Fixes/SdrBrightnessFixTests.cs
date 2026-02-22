@@ -1,5 +1,6 @@
 using HDRFixer.Core.Display;
 using HDRFixer.Core.Fixes;
+using HDRFixer.Core.Registry;
 using Xunit;
 
 namespace HDRFixer.Core.Tests.Fixes;
@@ -23,7 +24,9 @@ public class SdrBrightnessFixTests
     [Fact]
     public void Apply_ReturnsSuccess()
     {
-        var fix = new SdrBrightnessFix(new DisplayInfo { MaxLuminance = 800f });
+        var fix = new SdrBrightnessFix(
+            new DisplayInfo { MaxLuminance = 800f },
+            new FakeRegistryManager());
         var result = fix.Apply();
         Assert.True(result.Success);
         Assert.Equal(FixState.Applied, fix.Status.State);
@@ -68,5 +71,18 @@ public class SdrBrightnessFixTests
         var fix = new SdrBrightnessFix(display);
         var status = fix.Diagnose();
         Assert.Equal(FixState.NotApplied, status.State);
+    }
+
+    private class FakeRegistryManager : IHdrRegistryManager
+    {
+        public List<string> GetMonitorIds() => new() { "MONITOR123" };
+        public bool IsAdvancedColorEnabled(string monitorId) => true;
+        public bool IsAutoHdrEnabled() => true;
+        public bool IsAutoHdrScreenSplitEnabled() => false;
+        public void SetAdvancedColorEnabled(string monitorId, bool enabled) { }
+        public void SetAutoHdrEnabled(bool enabled) { }
+        public void SetAutoHdrScreenSplit(bool enabled) { }
+        public void SetSdrWhiteLevel(string monitorId, float nits) { }
+        public void SetAutoHdrPerGame(string exePath, bool enabled) { }
     }
 }

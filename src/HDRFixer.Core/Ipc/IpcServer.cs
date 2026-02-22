@@ -21,26 +21,63 @@ public class IpcServer : IDisposable
     {
         while (!ct.IsCancellationRequested)
         {
-            using var server = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 10, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             try
             {
+                var server = new NamedPipeServerStream(
+                    PipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous);
+
                 await server.WaitForConnectionAsync(ct);
-                using var reader = new StreamReader(server, Encoding.UTF8);
-                using var writer = new StreamWriter(server, Encoding.UTF8) { AutoFlush = true };
-                string? line = await reader.ReadLineAsync(ct);
-                if (line != null)
-                {
-                    var message = JsonSerializer.Deserialize<IpcMessage>(line);
-                    if (message != null)
-                    {
-                        MessageReceived?.Invoke(message);
-                        var response = new IpcMessage { Type = IpcMessageType.Response, Action = message.Action, RequestId = message.RequestId };
-                        await writer.WriteLineAsync(JsonSerializer.Serialize(response));
-                    }
-                }
+                _ = HandleConnectionAsync(server, ct);
             }
             catch (OperationCanceledException) { break; }
+            catch (Exception)
+            {
+                if (!ct.IsCancellationRequested)
+                    await Task.Delay(1000, ct);
+            }
+        }
+    }
+
+    private async Task HandleConnectionAsync(NamedPipeServerStream server, CancellationToken ct)
+    {
+        using (server)
+        {
+            try
+            {
+                using var reader = new StreamReader(server, Encoding.UTF8);
+                using var writer = new StreamWriter(server, Encoding.UTF8) { AutoFlush = true };
+
+                while (!ct.IsCancellationRequested && server.IsConnected)
+                {
+                    string? line = await reader.ReadLineAsync(ct);
+                    if (line == null) break;
+
+                    try
+                    {
+                        var message = JsonSerializer.Deserialize<IpcMessage>(line);
+                        if (message != null)
+                        {
+                            MessageReceived?.Invoke(message);
+
+                            var response = new IpcMessage
+                            {
+                                Type = IpcMessageType.Response,
+                                Action = message.Action,
+                                RequestId = message.RequestId,
+                                Payload = "Success"
+                            };
+                            await writer.WriteLineAsync(JsonSerializer.Serialize(response));
+                        }
+                    }
+                    catch (JsonException) { }
+                }
+            }
             catch (IOException) { }
+            catch (OperationCanceledException) { }
         }
     }
 
