@@ -11,25 +11,6 @@ public static class HdrRegistryPaths
     public const string VideoSettings = @"Software\Microsoft\Windows\CurrentVersion\VideoSettings";
 }
 
-public static class DirectXSettingsParser
-{
-    public static Dictionary<string, string> Parse(string settingsString)
-    {
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (string.IsNullOrWhiteSpace(settingsString)) return result;
-        foreach (var pair in settingsString.Split(';', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var parts = pair.Split('=', 2);
-            if (parts.Length == 2) result[parts[0].Trim()] = parts[1].Trim();
-        }
-        return result;
-    }
-
-    public static string Serialize(Dictionary<string, string> settings)
-    {
-        return string.Join(";", settings.Select(kv => $"{kv.Key}={kv.Value}")) + ";";
-    }
-}
 
 public interface IHdrRegistryManager
 {
