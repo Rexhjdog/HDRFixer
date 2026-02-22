@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using static HDRFixer.Core.ColorProfile.IccConstants;
 
 namespace HDRFixer.Core.ColorProfile;
 
@@ -16,7 +17,7 @@ public static class IccBinaryHelpers
     {
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
-        WriteTag(w, "XYZ "); WriteBE32(w, 0);
+        WriteTag(w, Tag_XYZ); WriteBE32(w, 0);
         WriteBE32(w, ToS15F16(x)); WriteBE32(w, ToS15F16(y)); WriteBE32(w, ToS15F16(z));
         return ms.ToArray();
     }
@@ -25,7 +26,7 @@ public static class IccBinaryHelpers
     {
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
-        WriteTag(w, "curv"); WriteBE32(w, 0); WriteBE32(w, 1);
+        WriteTag(w, Tag_curv); WriteBE32(w, 0); WriteBE32(w, 1);
         WriteBE16(w, (ushort)Math.Round(gamma * 256.0));
         WriteBE16(w, 0);
         return ms.ToArray();
@@ -35,7 +36,7 @@ public static class IccBinaryHelpers
     {
         using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
-        WriteTag(w, "mluc"); WriteBE32(w, 0); WriteBE32(w, 1); WriteBE32(w, 12);
+        WriteTag(w, Tag_mluc); WriteBE32(w, 0); WriteBE32(w, 1); WriteBE32(w, 12);
         WriteBE16(w, (ushort)'e'); WriteBE16(w, (ushort)'n');
         WriteBE16(w, (ushort)'U'); WriteBE16(w, (ushort)'S');
         var encoded = Encoding.BigEndianUnicode.GetBytes(text);
