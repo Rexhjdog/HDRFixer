@@ -19,6 +19,7 @@ public class AppSettings
 public class SettingsManager
 {
     private readonly string _settingsPath;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public SettingsManager(string? configDir = null)
     {
@@ -29,12 +30,56 @@ public class SettingsManager
 
     public void Save(AppSettings settings)
     {
-        File.WriteAllText(_settingsPath, JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
+        _semaphore.Wait();
+        try
+        {
+            File.WriteAllText(_settingsPath, JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task SaveAsync(AppSettings settings)
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            await File.WriteAllTextAsync(_settingsPath, JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public AppSettings Load()
     {
-        if (!File.Exists(_settingsPath)) return new AppSettings();
-        return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(_settingsPath)) ?? new AppSettings();
+        _semaphore.Wait();
+        try
+        {
+            if (!File.Exists(_settingsPath)) return new AppSettings();
+            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(_settingsPath)) ?? new AppSettings();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task<AppSettings> LoadAsync()
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            if (!File.Exists(_settingsPath)) return new AppSettings();
+            string json = await File.ReadAllTextAsync(_settingsPath);
+            return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

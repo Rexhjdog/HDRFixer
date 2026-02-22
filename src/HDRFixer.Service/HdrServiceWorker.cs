@@ -20,6 +20,7 @@ public class HdrServiceWorker : BackgroundService
         _fixEngine = FixEngineFactory.Create();
         _settingsManager = new SettingsManager();
 
+        // Keep synchronous load for startup initialization
         var settings = _settingsManager.Load();
         var oledSettings = new OledProtectionSettings
         {
@@ -43,11 +44,18 @@ public class HdrServiceWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var settings = _settingsManager.Load();
-
-            if (settings.EnableFixWatchdog)
+            try
             {
-                RunWatchdog();
+                var settings = await _settingsManager.LoadAsync();
+
+                if (settings.EnableFixWatchdog)
+                {
+                    RunWatchdog();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reloading settings in watchdog loop.");
             }
 
             // In a real implementation, we would wait for WM_DISPLAYCHANGE
