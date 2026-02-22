@@ -1,0 +1,1 @@
+Cross-platform testing for C++ core logic was enabled by mocking Windows headers and conditionally compiling source files using CMake.

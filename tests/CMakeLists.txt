@@ -22,6 +22,18 @@ else()
         test_main.cpp
         test_settings.cpp
         ../src/core/config/settings.cpp
+
+        test_transfer_functions.cpp
+        ../src/core/color/transfer_functions.cpp
+
+        test_gamma_lut.cpp
+        ../src/core/color/gamma_lut.cpp
+
+        test_mhc2_writer.cpp
+        ../src/core/profile/mhc2_writer.cpp
+
+        test_edid_reader.cpp
+        ../src/core/display/edid_reader.cpp
     )
     target_include_directories(hdrfixer_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
