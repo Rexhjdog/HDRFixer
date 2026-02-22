@@ -10,6 +10,7 @@ add_library(hdrfixer_core STATIC
     registry/registry_backup.cpp
     config/settings.cpp
     log/logger.cpp
+    fixes/fix_engine.cpp
 )
 
 target_include_directories(hdrfixer_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

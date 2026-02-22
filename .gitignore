@@ -12,6 +12,7 @@ obj/
 packages/
 
 ## Build results
+build/
 [Dd]ebug/
 [Rr]elease/
 x64/

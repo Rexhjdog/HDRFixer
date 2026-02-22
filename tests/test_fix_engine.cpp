@@ -1,5 +1,5 @@
 #include "doctest.h"
-#include "app/fixes/fix_engine.h"
+#include "core/fixes/fix_engine.h"
 
 using namespace hdrfixer::fixes;
 

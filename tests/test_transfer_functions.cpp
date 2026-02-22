@@ -30,8 +30,9 @@ TEST_CASE("Gamma power law") {
     CHECK(gamma_inv_eotf(0.5, 2.2) == doctest::Approx(std::pow(0.5, 1.0/2.2)).epsilon(0.0001));
 }
 
-TEST_CASE("sRGB brighter than gamma 2.2 in shadows") {
-    double srgb_mid = srgb_eotf(0.5);
-    double g22_mid = gamma_eotf(0.5, 2.2);
-    CHECK(srgb_mid > g22_mid);
+TEST_CASE("sRGB brighter than gamma 2.2 in deep shadows") {
+    // sRGB's linear segment lifts deep shadows above pure gamma 2.2
+    double srgb_shadow = srgb_eotf(0.05);
+    double g22_shadow = gamma_eotf(0.05, 2.2);
+    CHECK(srgb_shadow > g22_shadow);
 }

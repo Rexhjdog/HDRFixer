@@ -15,7 +15,8 @@ std::expected<std::vector<DisplayInfo>, std::string> detect_displays() {
 
     // Query display paths for LUID/source/target mapping
     auto paths_result = query_display_paths();
-    auto& paths = paths_result.has_value() ? paths_result.value() : std::vector<DisplayPath>{};
+    std::vector<DisplayPath> empty_paths;
+    auto& paths = paths_result.has_value() ? paths_result.value() : empty_paths;
 
     std::vector<DisplayInfo> displays;
 

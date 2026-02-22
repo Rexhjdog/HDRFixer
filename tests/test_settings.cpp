@@ -40,7 +40,7 @@ TEST_CASE("SettingsManager serialize round-trip") {
 
 TEST_CASE("Settings path exists after save") {
     SettingsManager mgr;
-    mgr.save();
+    (void)mgr.save();
     CHECK(std::filesystem::exists(SettingsManager::settings_path()));
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "fix_engine.h"
+#include "core/fixes/fix_engine.h"
 #include "core/display/display_info.h"
 
 namespace hdrfixer::fixes {

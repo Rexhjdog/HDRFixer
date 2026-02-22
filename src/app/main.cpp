@@ -4,7 +4,7 @@
 #include "core/config/settings.h"
 #include "core/log/logger.h"
 
-#include "fixes/fix_engine.h"
+#include "core/fixes/fix_engine.h"
 #include "fixes/gamma_fix.h"
 #include "fixes/sdr_brightness_fix.h"
 #include "fixes/pixel_format_fix.h"
@@ -33,8 +33,10 @@ static void refresh_displays() {
         g_displays = std::move(result.value());
         LOG_INFO(std::format("Detected {} display(s)", g_displays.size()));
         for (const auto& d : g_displays) {
+            std::string narrow_name(d.device_name.size(), '\0');
+            WideCharToMultiByte(CP_UTF8, 0, d.device_name.c_str(), -1, narrow_name.data(), static_cast<int>(narrow_name.size()), nullptr, nullptr);
             LOG_INFO(std::format("  {} - HDR:{} {}bpc MaxLum:{:.0f}nits SDRWhite:{:.0f}nits",
-                std::string(d.device_name.begin(), d.device_name.end()),
+                narrow_name,
                 d.is_hdr_enabled ? "ON" : "OFF",
                 d.bits_per_color,
                 d.max_luminance,
@@ -103,7 +105,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     // Load settings
-    g_settings.load();
+    (void)g_settings.load();
 
     // Initialize logger
     LOG_INFO("HDRFixer v2.0.0 starting");
@@ -199,7 +201,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     g_tray.reset();
     g_engine.reset();
 
-    g_settings.save();
+    (void)g_settings.save();
     CoUninitialize();
     CloseHandle(hMutex);
 
