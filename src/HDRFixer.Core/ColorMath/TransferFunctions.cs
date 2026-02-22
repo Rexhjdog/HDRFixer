@@ -30,6 +30,7 @@ public static class TransferFunctions
 
     public static double PqEotf(double v)
     {
+        v = Math.Clamp(v, 0.0, 1.0);
         double vp = Math.Pow(v, 1.0 / PqM2);
         double num = Math.Max(vp - PqC1, 0.0);
         double den = PqC2 - PqC3 * vp;
