@@ -1,5 +1,6 @@
 #include "core/log/logger.h"
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <windows.h>
 #include <shlobj.h>
