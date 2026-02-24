@@ -1,4 +1,5 @@
 #include "display_config.h"
+#include <format>
 #include <vector>
 
 namespace hdrfixer::display {

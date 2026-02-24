@@ -1,6 +1,7 @@
 #include "watchdog.h"
 #include "core/log/logger.h"
 #include "core/registry/hdr_registry.h"
+#include <format>
 
 namespace hdrfixer::fixes {
 

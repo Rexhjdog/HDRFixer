@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "core/display/edid_reader.h"
+#include <cstring>
 
 using namespace hdrfixer::display;
 
