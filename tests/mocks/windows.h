@@ -6,6 +6,7 @@
 #endif
 
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <cwchar>
 #include <string>
