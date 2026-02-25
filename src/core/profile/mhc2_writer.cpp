@@ -60,6 +60,7 @@ std::vector<uint8_t> build_mluc_tag(const std::string& text) {
 std::vector<uint8_t> build_mhc2_tag(const Mhc2Params& params) {
     std::vector<uint8_t> tag;
     int lut_size = static_cast<int>(params.lut.size());
+    if (lut_size < 2) return tag; // LUT too small to be valid
 
     write_tag_sig(tag, "MHC2");
     write_be32(tag, 0); // reserved

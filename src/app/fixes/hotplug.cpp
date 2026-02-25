@@ -61,7 +61,13 @@ bool Hotplug::is_display_change_event(WPARAM wParam, LPARAM lParam)
     }
 
     auto* hdr = reinterpret_cast<const DEV_BROADCAST_HDR*>(lParam);
+    if (hdr->dbch_size < sizeof(DEV_BROADCAST_HDR)) {
+        return false;
+    }
     if (hdr->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE) {
+        return false;
+    }
+    if (hdr->dbch_size < sizeof(DEV_BROADCAST_DEVICEINTERFACE)) {
         return false;
     }
 

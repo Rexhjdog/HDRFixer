@@ -101,6 +101,12 @@ static void on_display_change() {
     }
 }
 
+// RAII wrapper for HANDLE to prevent leaks on error paths
+struct HandleGuard {
+    HANDLE h = nullptr;
+    ~HandleGuard() { if (h) CloseHandle(h); }
+};
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     // Prevent multiple instances
     HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"HDRFixerSingletonV2");
@@ -108,6 +114,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
         CloseHandle(hMutex);
         return 0;
     }
+    HandleGuard mutex_guard{hMutex};
 
     // Initialize COM (STA for UI thread with message pump)
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
@@ -173,7 +180,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
         LOG_ERROR("Failed to create tray icon");
         MessageBoxW(nullptr, L"Failed to create system tray icon", L"HDRFixer Error", MB_ICONERROR);
         CoUninitialize();
-        CloseHandle(hMutex);
         return 1;
     }
 
@@ -216,7 +222,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
 
     (void)g_settings.save();
     CoUninitialize();
-    CloseHandle(hMutex);
+    // hMutex released by HandleGuard destructor
 
     return static_cast<int>(msg.wParam);
 }

@@ -1,4 +1,5 @@
 #include "core/registry/registry_backup.h"
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <format>
@@ -65,7 +66,9 @@ static std::wstring unescape_pipes(const std::wstring& s) {
                 result += L'\\';
                 ++i;
             } else {
-                result += s[i];
+                result += s[i];     // keep the backslash
+                result += s[i + 1]; // keep the following character
+                ++i;
             }
         } else {
             result += s[i];

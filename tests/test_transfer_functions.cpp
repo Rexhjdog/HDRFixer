@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "core/color/transfer_functions.h"
+#include <cmath>
 
 using namespace hdrfixer::color;
 
@@ -35,4 +36,44 @@ TEST_CASE("sRGB brighter than gamma 2.2 in deep shadows") {
     double srgb_shadow = srgb_eotf(0.05);
     double g22_shadow = gamma_eotf(0.05, 2.2);
     CHECK(srgb_shadow > g22_shadow);
+}
+
+TEST_CASE("sRGB EOTF clamps negative input") {
+    CHECK(srgb_eotf(-1.0) == doctest::Approx(0.0));
+    CHECK(srgb_eotf(-0.5) == doctest::Approx(0.0));
+}
+
+TEST_CASE("sRGB EOTF clamps above 1.0") {
+    CHECK(srgb_eotf(1.5) == doctest::Approx(1.0));
+}
+
+TEST_CASE("sRGB inv EOTF clamps negative input") {
+    double result = srgb_inv_eotf(-0.5);
+    CHECK(result >= 0.0);
+    CHECK(!std::isnan(result));
+}
+
+TEST_CASE("PQ EOTF clamps out-of-range input") {
+    CHECK(pq_eotf(-1.0) == doctest::Approx(0.0).epsilon(0.01));
+    CHECK(pq_eotf(2.0) == doctest::Approx(10000.0).epsilon(1.0));
+}
+
+TEST_CASE("PQ inv EOTF clamps negative nits") {
+    double result = pq_inv_eotf(-100.0);
+    CHECK(!std::isnan(result));
+    CHECK(result >= 0.0);
+}
+
+TEST_CASE("PQ inv EOTF clamps above max nits") {
+    double result = pq_inv_eotf(20000.0);
+    CHECK(!std::isnan(result));
+    CHECK(result == doctest::Approx(1.0).epsilon(0.001));
+}
+
+TEST_CASE("gamma_eotf handles negative input") {
+    CHECK(gamma_eotf(-0.5, 2.2) == 0.0);
+}
+
+TEST_CASE("gamma_inv_eotf handles negative input") {
+    CHECK(gamma_inv_eotf(-0.5, 2.2) == 0.0);
 }

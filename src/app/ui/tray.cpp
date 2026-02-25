@@ -158,6 +158,11 @@ void TrayIcon::set_share_mode(bool active) {
 LRESULT CALLBACK TrayIcon::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     auto* self = reinterpret_cast<TrayIcon*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
+    // Guard: self is null until SetWindowLongPtrW is called after CreateWindowExW
+    if (!self) {
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    }
+
     // Handle TaskbarCreated (registered dynamically, so can't be in the switch)
     if (WM_TASKBAR_CREATED && msg == WM_TASKBAR_CREATED && self) {
         // Explorer restarted — re-add the tray icon

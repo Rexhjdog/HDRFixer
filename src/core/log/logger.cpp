@@ -83,18 +83,21 @@ void Logger::log(Level level, const std::string& message, const std::source_loca
         return;
     }
 
-    // Get current timestamp
-    auto now = std::chrono::system_clock::now();
-    auto time_t_now = std::chrono::system_clock::to_time_t(now);
-    std::tm tm_buf{};
-    localtime_s(&tm_buf, &time_t_now);
-
-    // Extract just the filename from the full path
+    // Extract just the filename from the full path (no lock needed, loc is local)
     std::string_view file_path = loc.file_name();
     auto last_sep = file_path.find_last_of("/\\");
     std::string_view filename = (last_sep != std::string_view::npos)
         ? file_path.substr(last_sep + 1)
         : file_path;
+
+    // Acquire lock before accessing any shared state (file_, timestamp)
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    // Get current timestamp under the lock to ensure ordered log entries
+    auto now = std::chrono::system_clock::now();
+    auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_buf{};
+    localtime_s(&tm_buf, &time_t_now);
 
     // Format: [2026-02-21 12:34:56] [INFO] [file.cpp:42] message
     auto formatted = std::format("[{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}] [{}] [{}:{}] {}",
@@ -104,8 +107,6 @@ void Logger::log(Level level, const std::string& message, const std::source_loca
         filename,
         loc.line(),
         message);
-
-    std::lock_guard<std::mutex> lock(mutex_);
 
     if (file_.is_open()) {
         file_ << formatted << "\n";

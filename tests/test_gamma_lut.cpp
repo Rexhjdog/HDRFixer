@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "core/color/gamma_lut.h"
+#include <cmath>
 
 using namespace hdrfixer::color;
 
@@ -39,5 +40,46 @@ TEST_CASE("HDR LUT monotonically increasing") {
     auto lut = generate_hdr_lut(4096, 200.0, 0.0);
     for (size_t i = 1; i < lut.size(); ++i) {
         CHECK(lut[i] >= lut[i - 1]);
+    }
+}
+
+TEST_CASE("SDR LUT minimum size clamped to 2") {
+    auto lut = generate_sdr_lut(1);
+    CHECK(lut.size() == 2);
+    CHECK(lut.front() == doctest::Approx(0.0).epsilon(0.001));
+    CHECK(lut.back() == doctest::Approx(1.0).epsilon(0.001));
+}
+
+TEST_CASE("SDR LUT size 0 clamped to 2") {
+    auto lut = generate_sdr_lut(0);
+    CHECK(lut.size() == 2);
+}
+
+TEST_CASE("HDR LUT minimum size clamped to 2") {
+    auto lut = generate_hdr_lut(1, 200.0, 0.0);
+    CHECK(lut.size() == 2);
+}
+
+TEST_CASE("HDR LUT negative nits clamped to 0") {
+    auto lut = generate_hdr_lut(256, -100.0, -50.0);
+    // Should not crash or produce NaN
+    for (auto v : lut) {
+        CHECK(!std::isnan(v));
+    }
+}
+
+TEST_CASE("HDR LUT with black > white nits") {
+    auto lut = generate_hdr_lut(256, 100.0, 200.0);
+    // black_nits clamped to white_nits, should produce valid output
+    for (auto v : lut) {
+        CHECK(!std::isnan(v));
+    }
+}
+
+TEST_CASE("HDR LUT all values are finite") {
+    auto lut = generate_hdr_lut(4096, 200.0, 0.0);
+    for (auto v : lut) {
+        CHECK(!std::isnan(v));
+        CHECK(!std::isinf(v));
     }
 }

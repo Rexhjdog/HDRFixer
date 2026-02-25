@@ -68,6 +68,18 @@ TEST_CASE("ICC profile contains MHC2 tag") {
     CHECK(found_mhc2);
 }
 
+TEST_CASE("S15Fixed16 clamping for large values") {
+    // Values beyond S15.16 range should be clamped
+    int32_t result_large = to_s15f16(100000.0);
+    // Should not overflow
+    CHECK(result_large > 0);
+}
+
+TEST_CASE("S15Fixed16 clamping for very negative values") {
+    int32_t result_neg = to_s15f16(-100000.0);
+    CHECK(result_neg < 0);
+}
+
 TEST_CASE("Profile writes to file and reads back") {
     auto lut = std::vector<double>(64, 0.0);
     for (int i = 0; i < 64; ++i) lut[i] = static_cast<double>(i) / 63.0;

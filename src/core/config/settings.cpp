@@ -121,12 +121,12 @@ void SettingsManager::deserialize(const std::string& data) {
         // Trim whitespace from key and value
         auto trim = [](std::string& s) {
             size_t start = s.find_first_not_of(" \t");
-            size_t end = s.find_last_not_of(" \t");
             if (start == std::string::npos) {
                 s.clear();
-            } else {
-                s = s.substr(start, end - start + 1);
+                return;
             }
+            size_t end = s.find_last_not_of(" \t");
+            s = s.substr(start, end - start + 1);
         };
         trim(key);
         trim(value);
@@ -143,7 +143,8 @@ void SettingsManager::deserialize(const std::string& data) {
             settings_.enable_fix_watchdog = parse_bool(value);
         } else if (key == "preferred_sdr_brightness_nits") {
             try {
-                settings_.preferred_sdr_brightness_nits = std::stof(value);
+                float v = std::stof(value);
+                if (v >= 0.0f) settings_.preferred_sdr_brightness_nits = v;
             } catch (...) {
                 // Keep default on parse failure
             }
@@ -151,7 +152,8 @@ void SettingsManager::deserialize(const std::string& data) {
             settings_.oled_pixel_shift_enabled = parse_bool(value);
         } else if (key == "oled_static_content_timeout_minutes") {
             try {
-                settings_.oled_static_content_timeout_minutes = std::stoi(value);
+                int v = std::stoi(value);
+                if (v >= 0) settings_.oled_static_content_timeout_minutes = v;
             } catch (...) {
                 // Keep default on parse failure
             }

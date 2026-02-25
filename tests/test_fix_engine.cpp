@@ -101,11 +101,26 @@ TEST_CASE("FixEngine revert skips not applied") {
     CHECK(ptr->applied == false);
 }
 
-TEST_CASE("FixEngine apply_all applies error-state fixes") {
+TEST_CASE("FixEngine apply_all skips error-state fixes") {
     FixEngine engine;
     engine.register_fix(std::make_unique<FailingFix>());
-    // Should attempt to apply fixes in Error state (re-apply attempt)
+    // Error-state fixes should NOT be re-applied (changed behavior)
     engine.apply_all(); // should not crash
     auto results = engine.diagnose_all();
     CHECK(results[0].state == FixState::Error);
+}
+
+TEST_CASE("FixEngine apply_all on empty engine") {
+    FixEngine engine;
+    engine.apply_all(); // should not crash
+    engine.revert_all(); // should not crash
+    auto results = engine.diagnose_all();
+    CHECK(results.empty());
+}
+
+TEST_CASE("FixEngine get_fix with empty string") {
+    FixEngine engine;
+    engine.register_fix(std::make_unique<MockFix>());
+    auto* fix = engine.get_fix("");
+    CHECK(fix == nullptr);
 }

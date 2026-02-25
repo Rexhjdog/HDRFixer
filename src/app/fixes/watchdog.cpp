@@ -28,18 +28,20 @@ Watchdog::~Watchdog()
 
 void Watchdog::start()
 {
-    if (running_.load(std::memory_order_acquire)) {
+    // Use exchange to atomically check-and-set, preventing concurrent start() calls
+    bool was_running = running_.exchange(true, std::memory_order_acq_rel);
+    if (was_running) {
         return; // already running
     }
 
     if (!stop_event_) {
         LOG_ERROR("Watchdog: cannot start -- stop event is invalid");
+        running_.store(false, std::memory_order_release);
         return;
     }
 
     // Ensure the stop event is non-signaled before launching the thread.
     ::ResetEvent(stop_event_);
-    running_.store(true, std::memory_order_release);
     thread_ = std::thread(&Watchdog::thread_func, this);
     LOG_INFO("Watchdog: started");
 }

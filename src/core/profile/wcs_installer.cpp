@@ -35,6 +35,9 @@ std::expected<void, std::string> install_profile(const InstallParams& params) {
 
     HMODULE mscms = GetModuleHandleW(L"Mscms.dll");
     if (!mscms) mscms = LoadLibraryW(L"Mscms.dll");
+    if (!mscms) {
+        return std::unexpected("Failed to load Mscms.dll");
+    }
 
     auto pfn = reinterpret_cast<PFN_ColorProfileAddDisplayAssociation>(
         GetProcAddress(mscms, "ColorProfileAddDisplayAssociation"));
@@ -62,6 +65,9 @@ std::expected<void, std::string> uninstall_profile(const std::wstring& filename,
     // Step 1: Remove display association
     HMODULE mscms = GetModuleHandleW(L"Mscms.dll");
     if (!mscms) mscms = LoadLibraryW(L"Mscms.dll");
+    if (!mscms) {
+        return std::unexpected("Failed to load Mscms.dll for uninstall");
+    }
 
     auto pfn = reinterpret_cast<PFN_ColorProfileRemoveDisplayAssociation>(
         GetProcAddress(mscms, "ColorProfileRemoveDisplayAssociation"));

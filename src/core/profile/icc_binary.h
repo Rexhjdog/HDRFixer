@@ -1,12 +1,14 @@
 #pragma once
 #include <cstdint>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 #include <string>
 
 namespace hdrfixer::profile {
 
 inline int32_t to_s15f16(double v) {
+    v = std::clamp(v, -32768.0, 32767.0 + (65535.0 / 65536.0));
     return static_cast<int32_t>(std::round(v * 65536.0));
 }
 

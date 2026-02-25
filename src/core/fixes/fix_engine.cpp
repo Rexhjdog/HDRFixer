@@ -13,8 +13,8 @@ size_t FixEngine::fix_count() const {
 void FixEngine::apply_all() {
     for (auto& fix : fixes_) {
         auto status = fix->diagnose();
-        if (status.state == FixState::NotApplied || status.state == FixState::Error) {
-            fix->apply();
+        if (status.state == FixState::NotApplied) {
+            (void)fix->apply();
         }
     }
 }
@@ -23,7 +23,7 @@ void FixEngine::revert_all() {
     for (auto& fix : fixes_) {
         auto status = fix->diagnose();
         if (status.state == FixState::Applied) {
-            fix->revert();
+            (void)fix->revert();
         }
     }
 }
