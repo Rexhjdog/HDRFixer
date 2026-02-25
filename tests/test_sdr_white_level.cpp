@@ -14,3 +14,12 @@ TEST_CASE("SDR white level nits to raw") {
     CHECK(nits_to_raw(200.0f) == 2500);
     CHECK(nits_to_raw(400.0f) == 5000);
 }
+
+TEST_CASE("SDR white level nits to raw clamps negative") {
+    CHECK(nits_to_raw(-100.0f) == 0);
+    CHECK(nits_to_raw(0.0f) == 0);
+}
+
+TEST_CASE("SDR white level raw to nits zero") {
+    CHECK(raw_to_nits(0) == doctest::Approx(0.0f));
+}

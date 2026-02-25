@@ -10,6 +10,7 @@ inline float raw_to_nits(uint32_t raw) {
 }
 
 inline uint32_t nits_to_raw(float nits) {
+    if (nits < 0.0f) nits = 0.0f;
     return static_cast<uint32_t>(std::round(nits / 80.0f * 1000.0f));
 }
 

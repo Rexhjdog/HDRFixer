@@ -35,7 +35,10 @@ std::expected<std::vector<DisplayInfo>, std::string> detect_displays() {
             ComPtr<IDXGIOutput6> output6;
             if (SUCCEEDED(output.As(&output6))) {
                 DXGI_OUTPUT_DESC1 desc{};
-                output6->GetDesc1(&desc);
+                if (FAILED(output6->GetDesc1(&desc))) {
+                    output.Reset();
+                    continue;
+                }
 
                 DisplayInfo info{};
                 info.device_name = desc.DeviceName;
