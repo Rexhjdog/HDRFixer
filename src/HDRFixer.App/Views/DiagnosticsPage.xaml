@@ -9,6 +9,7 @@
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Button Content="Run Full Diagnostic" Click="RunDiagnostic_Click" />
                 <Button Content="Export Report" Click="ExportReport_Click" />
+                <Button Content="Clear Report" Click="ClearReport_Click" />
             </StackPanel>
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
                 <TextBlock x:Name="DiagnosticOutput" Text="Click 'Run Full Diagnostic' to scan your system." TextWrapping="Wrap" FontFamily="Consolas" />

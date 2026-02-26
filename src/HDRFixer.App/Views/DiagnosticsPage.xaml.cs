@@ -72,6 +72,11 @@ public sealed partial class DiagnosticsPage : Page
         DiagnosticOutput.Text = sb.ToString();
     }
 
+    private void ClearReport_Click(object sender, RoutedEventArgs e)
+    {
+        DiagnosticOutput.Text = "Click 'Run Full Diagnostic' to scan your system.";
+    }
+
     private async void ExportReport_Click(object sender, RoutedEventArgs e)
     {
         string report = DiagnosticOutput.Text;
