@@ -45,6 +45,24 @@ public class TransferFunctionTests
         Assert.Equal(0.0, TransferFunctions.PqEotf(0.0), precision: 4);
     }
 
+    [Theory]
+    [InlineData(-0.1, 0.0)]
+    [InlineData(-1.0, 0.0)]
+    [InlineData(double.MinValue, 0.0)]
+    public void PqEotf_ClampsNegativeValuesToZero(double input, double expected)
+    {
+        Assert.Equal(expected, TransferFunctions.PqEotf(input), precision: 4);
+    }
+
+    [Theory]
+    [InlineData(1.1, 10000.0)]
+    [InlineData(2.0, 10000.0)]
+    [InlineData(double.MaxValue, 10000.0)]
+    public void PqEotf_ClampsLargeValuesToMaxNits(double input, double expected)
+    {
+        Assert.Equal(expected, TransferFunctions.PqEotf(input), precision: 4);
+    }
+
     [Fact]
     public void PqInvEotf_RoundTrips()
     {
