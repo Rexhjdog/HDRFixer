@@ -99,7 +99,15 @@ static std::vector<std::wstring> split_on_pipe(const std::wstring& line) {
 // Get the backup directory path (%APPDATA%\HDRFixer\backups)
 static std::filesystem::path get_backup_directory() {
     wchar_t* appdata_path = nullptr;
+    // Try Roaming AppData (standard for backups)
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &appdata_path))) {
+        std::filesystem::path dir = std::filesystem::path(appdata_path) / L"HDRFixer" / L"backups";
+        CoTaskMemFree(appdata_path);
+        return dir;
+    }
+
+    // Try Local AppData as a fallback
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &appdata_path))) {
         std::filesystem::path dir = std::filesystem::path(appdata_path) / L"HDRFixer" / L"backups";
         CoTaskMemFree(appdata_path);
         return dir;
@@ -111,8 +119,8 @@ static std::filesystem::path get_backup_directory() {
         return std::filesystem::path(env) / L"HDRFixer" / L"backups";
     }
 
-    // Last resort fallback
-    return std::filesystem::path(L"C:\\HDRFixer\\backups");
+    // Last resort fallback: use a relative path
+    return std::filesystem::path(L"HDRFixer") / L"backups";
 }
 
 // ---------------------------------------------------------------------------
